@@ -1,0 +1,5 @@
+{
+    "java.configuration.updateBuildConfiguration": "interactive",
+    "cmake.sourceDirectory": "C:/SourceCode/ufu_call/windows/runner",
+    "java.compile.nullAnalysis.mode": "automatic"
+}
