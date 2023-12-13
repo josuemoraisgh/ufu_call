@@ -15,16 +15,16 @@ import '../models/stream_user_model.dart';
 import 'package:image/image.dart' as imglib;
 
 class UserFaceDetectorView extends StatefulWidget {
-  final RxNotifier<List<StreamUser>>? assistidoProvavel;
+  final RxNotifier<List<StreamUser>>? userProvavel;
   final RxNotifier<bool>? isPhotoChanged;
-  final StreamUser? assistido;
-  final List<StreamUser>? assistidoList;
+  final StreamUser? user;
+  final List<StreamUser>? userList;
   final StackFit? stackFit;
   const UserFaceDetectorView(
       {super.key,
-      this.assistidoList,
-      this.assistidoProvavel,
-      this.assistido,
+      this.userList,
+      this.userProvavel,
+      this.user,
       this.stackFit,
       this.isPhotoChanged});
 
@@ -34,7 +34,7 @@ class UserFaceDetectorView extends StatefulWidget {
 
 class _UserFaceDetectorViewState extends State<UserFaceDetectorView> {
   late Future<bool> isInited;
-  late final UserProviderStore assistidosProviderStore;
+  late final UserProviderStore userProviderStore;
   late final FaceDetectionService faceDetectionService;
   bool _canProcess = true, _isBusy = false, _isFace = false;
 
@@ -45,9 +45,8 @@ class _UserFaceDetectorViewState extends State<UserFaceDetectorView> {
   CustomPaint? _customPaint;
 
   Future<bool> init() async {
-    assistidosProviderStore =
-        Modular.get<UserController>().assistidosProviderStore;
-    faceDetectionService = assistidosProviderStore.faceDetectionService;
+    userProviderStore = Modular.get<UserController>().userProviderStore;
+    faceDetectionService = userProviderStore.faceDetectionService;
     _cameraService = _cameraService ?? CameraService();
     return true;
   }
@@ -69,7 +68,7 @@ class _UserFaceDetectorViewState extends State<UserFaceDetectorView> {
             customPaint: _customPaint,
             onPaintLiveImageFunc: _processImage,
             takeImageFunc: _cameraTakeImage,
-            isRealTime: widget.assistidoList != null,
+            isRealTime: widget.userList != null,
             stackFit: widget.stackFit,
             initialDirection: CameraLensDirection.back,
           );
@@ -80,7 +79,7 @@ class _UserFaceDetectorViewState extends State<UserFaceDetectorView> {
   }
 
   Future<void> _cameraTakeImage(Uint8List? uint8ListImage) async {
-    if (widget.assistidoList != null) {
+    if (widget.userList != null) {
       if ((faces?.isNotEmpty ?? false) &&
           (cameraImage != null) &&
           (_cameraService?.camera != null)) {
@@ -90,12 +89,12 @@ class _UserFaceDetectorViewState extends State<UserFaceDetectorView> {
         await faceDetectionService.predict(
             cameraImage!,
             _cameraService!.camera!.sensorOrientation,
-            widget.assistidoList!,
-            widget.assistidoProvavel!);
+            widget.userList!,
+            widget.userProvavel!);
       }
     } else {
-      if ((widget.assistido != null) && (uint8ListImage != null)) {
-        widget.assistido?.addSetPhoto(uint8ListImage);
+      if ((widget.user != null) && (uint8ListImage != null)) {
+        widget.user?.addSetPhoto(uint8ListImage);
         if (widget.isPhotoChanged != null) {
           widget.isPhotoChanged!.value = true;
         }
@@ -130,7 +129,7 @@ class _UserFaceDetectorViewState extends State<UserFaceDetectorView> {
     if (mounted) {
       setState(
         () {
-          if (widget.assistidoList != null) {
+          if (widget.userList != null) {
             if ((_isFace == true)) {
               _isFace = false;
               _cameraTakeImage(imglib.encodeJpg(

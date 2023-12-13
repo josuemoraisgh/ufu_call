@@ -19,27 +19,23 @@ class _DropdownBodyState extends State<DropdownBody> {
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<List<String>?>(
-      future:
-          widget.controller.assistidosProviderStore.getConfig('dateSelected'),
+      future: widget.controller.userProviderStore.getConfig('dateSelected'),
       builder: (BuildContext context, AsyncSnapshot<List<String>?> dateSel) =>
           FutureBuilder<List<String>?>(
-        future:
-            widget.controller.assistidosProviderStore.getConfig('itensList'),
+        future: widget.controller.userProviderStore.getConfig('itensList'),
         builder: (BuildContext context,
                 AsyncSnapshot<List<String>?> itensLis) =>
             itensLis.hasData && dateSel.hasData
                 ? StreamBuilder(
                     initialData: BoxEvent("", dateSel.data, false),
-                    stream: widget
-                        .controller.assistidosProviderStore.configStore
+                    stream: widget.controller.userProviderStore.configStore
                         .watch("dateSelected")
                         .asBroadcastStream() as Stream<BoxEvent>,
                     builder: (BuildContext context,
                             AsyncSnapshot<BoxEvent> dateSelected) =>
                         StreamBuilder(
                       initialData: BoxEvent("", itensLis.data, false),
-                      stream: widget
-                          .controller.assistidosProviderStore.configStore
+                      stream: widget.controller.userProviderStore.configStore
                           .watch("itensList")
                           .asBroadcastStream() as Stream<BoxEvent>,
                       builder: (BuildContext context,
@@ -50,9 +46,8 @@ class _DropdownBodyState extends State<DropdownBody> {
                           value: dateSelected.data!.value[0],
                           onChanged: (String? novoItemSelecionado) {
                             if (novoItemSelecionado != null) {
-                              widget.controller.assistidosProviderStore
-                                  .setConfig(
-                                      "dateSelected", [novoItemSelecionado]);
+                              widget.controller.userProviderStore.setConfig(
+                                  "dateSelected", [novoItemSelecionado]);
                             }
                           },
                           style: const TextStyle(

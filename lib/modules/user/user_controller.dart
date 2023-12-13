@@ -15,25 +15,24 @@ class UserController {
   final isInitedController = RxNotifier<bool>(false);
   final focusNode = FocusNode();
   final whatWidget = RxNotifier<int>(0);
-  final assistidoProvavelList = RxNotifier<List<StreamUser>>([]);
+  final userProvavelList = RxNotifier<List<StreamUser>>([]);
   final faceDetector = RxNotifier<bool>(false);
   final isRunningSync = RxNotifier<bool>(false);
   final countSync = RxNotifier<int>(0);
 
-  late final ValueListenable<Box<User>> listenableAssistido;
-  late final UserProviderStore assistidosProviderStore;
+  late final ValueListenable<Box<User>> listenableUser;
+  late final UserProviderStore userProviderStore;
 
-  UserController({UserProviderStore? assistidosProviderStore}) {
-    this.assistidosProviderStore =
-        assistidosProviderStore ?? Modular.get<UserProviderStore>();
+  UserController({UserProviderStore? userProviderStore}) {
+    this.userProviderStore =
+        userProviderStore ?? Modular.get<UserProviderStore>();
   }
 
   Future<void> init() async {
     if (isInitedController.value == false) {
-      await assistidosProviderStore.init();
-      listenableAssistido =
-          (await assistidosProviderStore.localStore.listenable());
-      (await assistidosProviderStore.syncStore.listenable())
+      await userProviderStore.init();
+      listenableUser = (await userProviderStore.localStore.listenable());
+      (await userProviderStore.syncStore.listenable())
           .addListener(() => sync());
       await sync();
       isInitedController.value = true;
@@ -43,12 +42,12 @@ class UserController {
   }
 
   List<StreamUser> search(
-      List<StreamUser> assistidoList, termosDeBusca, String condicao) {
-    return assistidoList
-        .where((assistido) =>
+      List<StreamUser> userList, termosDeBusca, String condicao) {
+    return userList
+        .where((user) =>
             // ignore: prefer_interpolation_to_compose_strings
-            assistido.condicao.contains(RegExp(r"^(" + condicao + ")")))
-        .where((assistido) => assistido.nomeM1
+            user.condicao.contains(RegExp(r"^(" + condicao + ")")))
+        .where((user) => user.nomeM1
             .toLowerCase()
             .replaceAllMapped(
                 RegExp(r'[\W\[\] ]'),
@@ -71,58 +70,58 @@ class UserController {
       dynamic status;
       if (isRunningSync.value == false) {
         isRunningSync.value = true;
-        countSync.value = await assistidosProviderStore.syncStore.length();
+        countSync.value = await userProviderStore.syncStore.length();
         while (countSync.value > 0) {
           status = null;
-          var sync = await (assistidosProviderStore.syncStore.getSync(0)
-            ..whenComplete(() => assistidosProviderStore.syncStore.delSync(0)));
+          var sync = await (userProviderStore.syncStore.getSync(0)
+            ..whenComplete(() => userProviderStore.syncStore.delSync(0)));
           if (sync != null) {
             if (sync.synckey == 'set') {
-              status = await assistidosProviderStore.remoteStore.setData(
+              status = await userProviderStore.remoteStore.setData(
                   (sync.syncValue as User).ident.toString(),
                   (sync.syncValue as User).toList());
             }
             if (sync.synckey == 'del') {
-              status = await assistidosProviderStore.remoteStore
+              status = await userProviderStore.remoteStore
                   .deleteData((sync.syncValue as String));
             }
             if (sync.synckey == 'addImage') {
-              status = await assistidosProviderStore.remoteStore.addFile(
+              status = await userProviderStore.remoteStore.addFile(
                   'BDados_Images',
                   (sync.syncValue[0] as String),
                   (sync.syncValue[1] as Uint8List));
             }
             if (sync.synckey == 'setImage') {
-              status = await assistidosProviderStore.remoteStore.setFile(
+              status = await userProviderStore.remoteStore.setFile(
                   'BDados_Images',
                   (sync.syncValue[0] as String),
                   (sync.syncValue[1] as Uint8List));
             }
             if (sync.synckey == 'delImage') {
-              status = await assistidosProviderStore.remoteStore
+              status = await userProviderStore.remoteStore
                   .deleteFile('BDados_Images', sync.syncValue);
             }
             if (sync.synckey == 'setConfig') {
-              status = await assistidosProviderStore.remoteStore.setData(
+              status = await userProviderStore.remoteStore.setData(
                   (sync.syncValue as List<String>)[0].toString(),
                   (sync.syncValue as List<String>).sublist(1).toList(),
                   table: 'Config');
             }
             if (status == null) {
-              await assistidosProviderStore.syncStore
+              await userProviderStore.syncStore
                   .addSync(sync.synckey, sync.syncValue);
               break;
             }
           }
-          countSync.value = await assistidosProviderStore.syncStore.length();
+          countSync.value = await userProviderStore.syncStore.length();
         }
-        var remoteConfigChanges = await assistidosProviderStore.remoteStore
-            .getChanges(table: "Config");
+        var remoteConfigChanges =
+            await userProviderStore.remoteStore.getChanges(table: "Config");
         if (remoteConfigChanges != null && remoteConfigChanges.isNotEmpty) {
           for (List e in remoteConfigChanges) {
             e.removeWhere((element) => element == "");
             final listString = e.sublist(1).cast<String>()[0];
-            await assistidosProviderStore.configStore.addConfig(
+            await userProviderStore.configStore.addConfig(
               e[0],
               listString.substring(listString.length - 1) == ";" &&
                       listString.substring(listString.length - 2) != ";"
@@ -132,12 +131,11 @@ class UserController {
           }
         }
         var remoteDataChanges =
-            await assistidosProviderStore.remoteStore.getChanges();
+            await userProviderStore.remoteStore.getChanges();
         if (remoteDataChanges != null) {
           for (var e in remoteDataChanges) {
-            final stAssist =
-                StreamUser(User.fromList(e), assistidosProviderStore);
-            assistidosProviderStore.localStore.setRow(stAssist);
+            final stAssist = StreamUser(User.fromList(e), userProviderStore);
+            userProviderStore.localStore.setRow(stAssist);
           }
         }
         isRunningSync.value = false;

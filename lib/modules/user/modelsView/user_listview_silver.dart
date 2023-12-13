@@ -24,13 +24,13 @@ class UserListViewSilver extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return FutureBuilder(
-      future: controller.assistidosProviderStore.configStore
-          .getConfig("dateSelected"),
+      future:
+          controller.userProviderStore.configStore.getConfig("dateSelected"),
       builder: (BuildContext context, AsyncSnapshot<List<String>?> value) =>
           value.hasData
               ? StreamBuilder<BoxEvent>(
                   initialData: BoxEvent("", value.data, false),
-                  stream: controller.assistidosProviderStore.configStore
+                  stream: controller.userProviderStore.configStore
                       .watch("dateSelected")
                       .asBroadcastStream() as Stream<BoxEvent>,
                   builder: (BuildContext context,
@@ -105,11 +105,12 @@ class UserListViewSilver extends StatelessWidget {
   }
 
   Widget row(StreamUser pessoa, String? dateSelected) {
-    return SafeArea(
-      top: false,
-      bottom: false,
-      minimum: const EdgeInsets.only(
-        left: 16,
+    return Card(
+      elevation: 5,
+      color: Colors.white,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10.0)),
+      margin: const EdgeInsets.only(
+        left: 8,
         top: 8,
         bottom: 8,
         right: 8,
@@ -120,22 +121,25 @@ class UserListViewSilver extends StatelessWidget {
             future: pessoa.photoUint8List,
             builder: (BuildContext context, AsyncSnapshot photoUint8List) =>
                 ClipRRect(
-              borderRadius: BorderRadius.circular(4),
-              child: photoUint8List.hasData
-                  ? (photoUint8List.data as Uint8List).isEmpty
-                      ? Image.asset(
-                          "assets/images/semFoto.png",
-                          fit: BoxFit.cover,
-                          width: 76,
-                          height: 76,
-                        )
-                      : Image.memory(
-                          Uint8List.fromList(photoUint8List.data),
-                          fit: BoxFit.cover,
-                          width: 76,
-                          height: 76,
-                        )
-                  : const Center(child: CircularProgressIndicator()),
+              borderRadius: BorderRadius.circular(10),
+              child: Padding(
+                padding:
+                    const EdgeInsets.only(left: 8, top: 8, bottom: 8, right: 0),
+                child: photoUint8List.hasData
+                    ? (photoUint8List.data as Uint8List).isEmpty
+                        ? Image.asset(
+                            "assets/images/semFoto.png",
+                            fit: BoxFit.cover,
+                            width: 76,
+                            height: 76,
+                          )
+                        : Image.memory(
+                            Uint8List.fromList(photoUint8List.data),
+                            fit: BoxFit.cover,
+                            width: 76,
+                          )
+                    : const Center(child: CircularProgressIndicator()),
+              ),
             ),
           ),
           Expanded(
@@ -214,7 +218,7 @@ class UserListViewSilver extends StatelessWidget {
             padding: EdgeInsets.zero,
             onPressed: () => Modular.to.pushNamed(
               "insert",
-              arguments: {"assistido": pessoa},
+              arguments: {"user": pessoa},
             ),
             child: const Icon(
               Icons.edit,

@@ -25,7 +25,7 @@ final Map<String, String> caracterMap = {
 abstract class Styles {
   static const TextStyle linhaProdutoNomeDoItem = TextStyle(
     color: Color.fromRGBO(0, 0, 0, 0.8),
-    fontSize: 18,
+    fontSize: 15,
     fontStyle: FontStyle.normal,
     fontWeight: FontWeight.normal,
   );

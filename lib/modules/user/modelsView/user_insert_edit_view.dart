@@ -9,8 +9,8 @@ import '../user_controller.dart';
 import '../models/stream_user_model.dart';
 
 class UserInsertEditView extends StatefulWidget {
-  final StreamUser? assistido;
-  const UserInsertEditView({super.key, this.assistido});
+  final StreamUser? user;
+  const UserInsertEditView({super.key, this.user});
 
   @override
   State<UserInsertEditView> createState() => _UserInsertEditViewState();
@@ -18,22 +18,21 @@ class UserInsertEditView extends StatefulWidget {
 
 class _UserInsertEditViewState extends State<UserInsertEditView> {
   late bool _isAdd;
-  late final StreamUser _assistido;
-  final _assistidosProviderStore =
-      Modular.get<UserController>().assistidosProviderStore;
+  late final StreamUser _user;
+  final _userProviderStore = Modular.get<UserController>().userProviderStore;
   final isPhotoChanged = RxNotifier<bool>(false);
   final _formKey1 = GlobalKey<FormState>();
   final _formKey2 = GlobalKey<FormState>();
 
   @override
   void initState() {
-    _isAdd = widget.assistido == null ? true : false;
+    _isAdd = widget.user == null ? true : false;
     if (_isAdd == false) {
-      _assistido = widget.assistido!.copyWith();
+      _user = widget.user!.copyWith();
     } else {
-      _assistido = StreamUser.vazio(_assistidosProviderStore, key: -1);
+      _user = StreamUser.vazio(_userProviderStore, key: -1);
     }
-    _assistido.saveJustLocal();
+    _user.saveJustLocal();
     super.initState();
   }
 
@@ -48,7 +47,7 @@ class _UserInsertEditViewState extends State<UserInsertEditView> {
           children: [
             const SizedBox(height: 20),
             TextFormField(
-              initialValue: _assistido.nomeM1,
+              initialValue: _user.nomeM1,
               decoration: const InputDecoration(
                 border: UnderlineInputBorder(),
                 icon: Icon(Icons.person),
@@ -64,7 +63,7 @@ class _UserInsertEditViewState extends State<UserInsertEditView> {
                 }
                 return null;
               },
-              onChanged: (v) => _assistido.nomeM1 = v,
+              onChanged: (v) => _user.nomeM1 = v,
             ),
             const SizedBox(height: 15),
             Column(
@@ -110,15 +109,15 @@ class _UserInsertEditViewState extends State<UserInsertEditView> {
                   }).toList(),
                   onChanged: (String? novoItemSelecionado) {
                     if (novoItemSelecionado != null) {
-                      _assistido.condicao = novoItemSelecionado;
+                      _user.condicao = novoItemSelecionado;
                     }
                   },
-                  value: _assistido.condicao.replaceAll(" ", ""),
+                  value: _user.condicao.replaceAll(" ", ""),
                 ),
               ])
             ]),
             TextFormField(
-              initialValue: _assistido.dataNascM1,
+              initialValue: _user.dataNascM1,
               decoration: const InputDecoration(
                   border: UnderlineInputBorder(),
                   icon: Icon(Icons.date_range),
@@ -137,7 +136,7 @@ class _UserInsertEditViewState extends State<UserInsertEditView> {
                 }
                 return null;
               },
-              onChanged: (v) => _assistido.dataNascM1 = v,
+              onChanged: (v) => _user.dataNascM1 = v,
             ),
             const SizedBox(height: 15),
             Row(children: [
@@ -174,15 +173,15 @@ class _UserInsertEditViewState extends State<UserInsertEditView> {
                   }).toList(),
                   onChanged: (String? novoItemSelecionado) {
                     if (novoItemSelecionado != null) {
-                      _assistido.estadoCivil = novoItemSelecionado;
+                      _user.estadoCivil = novoItemSelecionado;
                     }
                   },
-                  value: _assistido.estadoCivil.replaceAll(" ", ""),
+                  value: _user.estadoCivil.replaceAll(" ", ""),
                 ),
               ])
             ]),
             TextFormField(
-              initialValue: _assistido.fone,
+              initialValue: _user.fone,
               decoration: const InputDecoration(
                   border: UnderlineInputBorder(),
                   icon: Icon(Icons.phone),
@@ -202,10 +201,10 @@ class _UserInsertEditViewState extends State<UserInsertEditView> {
                 }
                 return null;
               },
-              onChanged: (v) => _assistido.fone = v,
+              onChanged: (v) => _user.fone = v,
             ),
             TextFormField(
-              initialValue: _assistido.rg,
+              initialValue: _user.rg,
               decoration: const InputDecoration(
                   border: UnderlineInputBorder(),
                   icon: Icon(Icons.assignment_ind),
@@ -215,10 +214,10 @@ class _UserInsertEditViewState extends State<UserInsertEditView> {
               inputFormatters: [
                 FilteringTextInputFormatter.digitsOnly,
               ],
-              onChanged: (v) => _assistido.rg = v,
+              onChanged: (v) => _user.rg = v,
             ),
             TextFormField(
-              initialValue: _assistido.cpf,
+              initialValue: _user.cpf,
               decoration: const InputDecoration(
                   border: UnderlineInputBorder(),
                   icon: Icon(Icons.attribution),
@@ -237,7 +236,7 @@ class _UserInsertEditViewState extends State<UserInsertEditView> {
                 }
                 return null;
               },
-              onChanged: (v) => _assistido.cpf = v,
+              onChanged: (v) => _user.cpf = v,
             ),
             const SizedBox(height: 15),
             Row(children: [
@@ -276,15 +275,15 @@ class _UserInsertEditViewState extends State<UserInsertEditView> {
                   }).toList(),
                   onChanged: (String? novoItemSelecionado) {
                     if (novoItemSelecionado != null) {
-                      _assistido.logradouro = novoItemSelecionado;
+                      _user.logradouro = novoItemSelecionado;
                     }
                   },
-                  value: _assistido.logradouro.replaceAll(" ", ""),
+                  value: _user.logradouro.replaceAll(" ", ""),
                 ),
               ])
             ]),
             TextFormField(
-              initialValue: _assistido.endereco,
+              initialValue: _user.endereco,
               decoration: const InputDecoration(
                   border: UnderlineInputBorder(),
                   icon: Icon(Icons.place),
@@ -298,10 +297,10 @@ class _UserInsertEditViewState extends State<UserInsertEditView> {
                 }
                 return null;
               },
-              onChanged: (v) => _assistido.endereco = v,
+              onChanged: (v) => _user.endereco = v,
             ),
             TextFormField(
-              initialValue: _assistido.numero,
+              initialValue: _user.numero,
               decoration: const InputDecoration(
                   border: UnderlineInputBorder(),
                   icon: Icon(Icons.numbers),
@@ -313,36 +312,36 @@ class _UserInsertEditViewState extends State<UserInsertEditView> {
                 }
                 return null;
               },
-              onChanged: (v) => _assistido.numero = v,
+              onChanged: (v) => _user.numero = v,
             ),
             TextFormField(
-              initialValue: _assistido.bairro,
+              initialValue: _user.bairro,
               decoration: const InputDecoration(
                   border: UnderlineInputBorder(),
                   icon: Icon(Icons.south_america_outlined),
                   labelText: "Bairro"),
               validator: (value) => null,
               onChanged: (v) {
-                _assistido.bairro = v;
+                _user.bairro = v;
               },
             ),
             TextFormField(
-              initialValue: _assistido.complemento,
+              initialValue: _user.complemento,
               decoration: const InputDecoration(
                   border: UnderlineInputBorder(),
                   icon: Icon(Icons.travel_explore),
                   labelText: "Complemento"),
               validator: (value) => null,
-              onChanged: (v) => _assistido.complemento = v,
+              onChanged: (v) => _user.complemento = v,
             ),
             TextFormField(
-              initialValue: _assistido.cep,
+              initialValue: _user.cep,
               decoration: const InputDecoration(
                   border: UnderlineInputBorder(),
                   icon: Icon(Icons.elevator_sharp),
                   labelText: "CEP"),
               validator: (value) => null,
-              onChanged: (v) => _assistido.cep = v,
+              onChanged: (v) => _user.cep = v,
             ),
             const SizedBox(height: 20),
             Table(
@@ -390,14 +389,14 @@ class _UserInsertEditViewState extends State<UserInsertEditView> {
                   onPressed: () {
                     setState(
                       () {
-                        _assistido.nomesMoradores.add(" ");
-                        _assistido.parentescos.add(" ");
-                        _assistido.datasNasc.add(
+                        _user.nomesMoradores.add(" ");
+                        _user.parentescos.add(" ");
+                        _user.datasNasc.add(
                             DateFormat('dd/MM/yyyy').format(DateTime.now()));
                       },
                     );
                     _insertEditMorador(
-                        context, _assistido.nomesMoradores.length - 1);
+                        context, _user.nomesMoradores.length - 1);
                   },
                   child: const Text("Add"),
                 ),
@@ -405,31 +404,31 @@ class _UserInsertEditViewState extends State<UserInsertEditView> {
               ],
             ),
             TextFormField(
-                initialValue: _assistido.obs,
+                initialValue: _user.obs,
                 decoration: const InputDecoration(
                     border: UnderlineInputBorder(),
                     icon: Icon(Icons.check),
                     labelText: "OBS"),
                 validator: (value) => null,
                 maxLines: 5,
-                onChanged: (v) => setState(() => _assistido.obs = v)),
+                onChanged: (v) => setState(() => _user.obs = v)),
             const SizedBox(height: 24),
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 ElevatedButton(
-                  onPressed: _assistido.nomeM1.length > 4
+                  onPressed: _user.nomeM1.length > 4
                       ? () async {
                           if (_formKey1.currentState!.validate()) {
                             _formKey1.currentState!.save();
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Assistido Salvo')),
+                              const SnackBar(content: Text('User Salvo')),
                             );
                             if (_isAdd) {
-                              _assistido.saveJustRemote();
+                              _user.saveJustRemote();
                             } else {
-                              widget.assistido?.copy(_assistido.copyWith());
-                              widget.assistido?.saveAll();
+                              widget.user?.copy(_user.copyWith());
+                              widget.user?.saveAll();
                             }
                             Modular.to.pop();
                           }
@@ -448,9 +447,9 @@ class _UserInsertEditViewState extends State<UserInsertEditView> {
 
   void _deleteMorador(BuildContext context) {
     var condicoes = List.generate(
-      _assistido.nomesMoradores.length,
+      _user.nomesMoradores.length,
       (index) {
-        final st = _assistido.nomesMoradores[index].split(" ");
+        final st = _user.nomesMoradores[index].split(" ");
         return '${st[0]} ${st.length > 1 ? st[1] : ""}';
       },
     );
@@ -472,9 +471,9 @@ class _UserInsertEditViewState extends State<UserInsertEditView> {
                   onPressed: () {
                     final int index = condicoes.indexOf(opcoes.value);
                     setState(() {
-                      _assistido.datasNasc.removeAt(index);
-                      _assistido.nomesMoradores.removeAt(index);
-                      _assistido.parentescos.removeAt(index);
+                      _user.datasNasc.removeAt(index);
+                      _user.nomesMoradores.removeAt(index);
+                      _user.parentescos.removeAt(index);
                     });
                     Modular.to.pop();
                   },
@@ -530,18 +529,18 @@ class _UserInsertEditViewState extends State<UserInsertEditView> {
 
   void _insertEditMorador(BuildContext context, int index) {
     var condicoes = ['Cônjuge', 'Filho(a)', 'Neto(a)', 'Agregado(a)', ' '];
-    String datasNasc = _assistido.datasNasc[index];
-    String nomesMoradores = _assistido.nomesMoradores[index];
+    String datasNasc = _user.datasNasc[index];
+    String nomesMoradores = _user.nomesMoradores[index];
     final RxNotifier<bool> change = RxNotifier<bool>(false);
     final RxNotifier<String> parentescos = RxNotifier<String>(
         " "); //Tem que ser igual ao ultimo elemento de condicoes
-    if (_assistido.parentescos.length > index) {
-      if (condicoes.contains(_assistido.parentescos[index])) {
-        parentescos.value = _assistido.parentescos[index];
+    if (_user.parentescos.length > index) {
+      if (condicoes.contains(_user.parentescos[index])) {
+        parentescos.value = _user.parentescos[index];
       }
     } else {
-      for (int i = _assistido.parentescos.length; i <= index; i++) {
-        _assistido.parentescos.add(" ");
+      for (int i = _user.parentescos.length; i <= index; i++) {
+        _user.parentescos.add(" ");
       }
     }
     showDialog(
@@ -566,9 +565,9 @@ class _UserInsertEditViewState extends State<UserInsertEditView> {
                       ? () {
                           setState(
                             () {
-                              _assistido.datasNasc[index] = datasNasc;
-                              _assistido.nomesMoradores[index] = nomesMoradores;
-                              _assistido.parentescos[index] = parentescos.value;
+                              _user.datasNasc[index] = datasNasc;
+                              _user.nomesMoradores[index] = nomesMoradores;
+                              _user.parentescos[index] = parentescos.value;
                             },
                           );
                           Modular.to.pop();
@@ -695,7 +694,7 @@ class _UserInsertEditViewState extends State<UserInsertEditView> {
     return ValueListenableBuilder(
       valueListenable: isPhotoChanged,
       builder: (BuildContext context, bool isphoto, _) => FutureBuilder(
-        future: _assistido.photoUint8List,
+        future: _user.photoUint8List,
         builder: (BuildContext context, AsyncSnapshot photoUint8List) {
           return photoUint8List.hasData
               ? Center(
@@ -714,7 +713,7 @@ class _UserInsertEditViewState extends State<UserInsertEditView> {
                               const SizedBox(height: 4.0),
                               FloatingActionButton(
                                 onPressed: () async {
-                                  _assistido.photoName = "";
+                                  _user.photoName = "";
                                   setState(() {});
                                 },
                                 backgroundColor: Colors.redAccent,
@@ -737,7 +736,7 @@ class _UserInsertEditViewState extends State<UserInsertEditView> {
                               FloatingActionButton(
                                 onPressed: () {
                                   Modular.to.pushNamed("faces", arguments: {
-                                    'assistido': _assistido,
+                                    'assistido': _user,
                                     'isPhotoChanged': isPhotoChanged
                                   });
                                 },
@@ -757,9 +756,9 @@ class _UserInsertEditViewState extends State<UserInsertEditView> {
 
   List<TableRow> montaTabela() {
     List<TableRow> resp = <TableRow>[];
-    if (_assistido.nomesMoradores.isNotEmpty) {
-      final list1 = _assistido.nomesMoradores;
-      final list2 = _assistido.datasNasc;
+    if (_user.nomesMoradores.isNotEmpty) {
+      final list1 = _user.nomesMoradores;
+      final list2 = _user.datasNasc;
       for (int i = 0; i < list1.length; i++) {
         var aux = list1[i].split(" ");
         var nome = '${aux[0]} ${(aux.length > 1 ? aux[1] : "")}';

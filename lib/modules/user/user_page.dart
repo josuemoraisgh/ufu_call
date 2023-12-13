@@ -37,32 +37,25 @@ class _UserPageState extends State<UserPage> {
         builder: (BuildContext context, bool isInited, _) => isInited
             ? ValueListenableBuilder<Box>(
                 valueListenable: controller
-                    .listenableAssistido, //controller.assistidosStoreList.stream,
+                    .listenableUser, //controller.assistidosStoreList.stream,
                 builder: (BuildContext context, Box box, _) =>
                     ValueListenableBuilder(
                   valueListenable: controller.textEditing,
                   builder: (BuildContext context,
                       TextEditingValue textEditingValue, _) {
                     List<StreamUser> list = box.values
-                        .map((e) =>
-                            StreamUser(e, controller.assistidosProviderStore))
+                        .map((e) => StreamUser(e, controller.userProviderStore))
                         .toList();
                     if (isInited) {
                       list = controller.search(
                         list,
                         textEditingValue.text,
-                        widget.dadosTela['title'] == 'Todos'
-                            ? ''
-                            : widget.dadosTela['title'] == 'Ativos'
-                                ? 'ATIVO'
-                                : 'INATIVO',
+                        'ATIVO',
                       );
                     }
                     return Scaffold(
                       appBar: customAppBar(isInited),
-                      body: isInited
-                          ? customBody(context, list)
-                          : const Center(child: CircularProgressIndicator()),
+                      body: customBody(context, list),
                       floatingActionButton:
                           customFloatingActionButton(context, list),
                     );
@@ -71,9 +64,7 @@ class _UserPageState extends State<UserPage> {
               )
             : Scaffold(
                 appBar: customAppBar(isInited),
-                body: isInited
-                    ? customBody(context, [])
-                    : const Center(child: CircularProgressIndicator()),
+                body: customBody(context, []),
                 floatingActionButton: customFloatingActionButton(context, []),
               ),
       );
@@ -93,7 +84,7 @@ class _UserPageState extends State<UserPage> {
             child: RxBuilder(
               builder: (BuildContext context) =>
                   controller.whatWidget.value == 0
-                      ? (isInited)
+                      ? isInited
                           ? Row(
                               children: [
                                 const Text(
@@ -137,31 +128,33 @@ class _UserPageState extends State<UserPage> {
         ],
       );
 
-  Widget customBody(BuildContext context, List<StreamUser> assistidoList) =>
+  Widget customBody(BuildContext context, List<StreamUser> userList) =>
       Container(
         width: MediaQuery.of(context).size.width,
         height: MediaQuery.of(context).size.height,
         decoration: BoxDecoration(
           image: DecorationImage(
             colorFilter: const ColorFilter.mode(
-                Color.fromRGBO(240, 240, 240, 0.1), BlendMode.modulate),
+                Color.fromRGBO(240, 240, 240, 0.5), BlendMode.modulate),
             image: AssetImage(widget.dadosTela['img']),
             fit: BoxFit.cover,
           ),
         ),
-        child: RxBuilder(
-          builder: (BuildContext context) => UserListViewSilver(
-            controller: controller,
-            list: controller.faceDetector.value == true
-                ? controller.assistidoProvavelList.value
-                : assistidoList,
-            faceDetectorView: controller.faceDetector.value == true
-                ? UserFaceDetectorView(
-                    assistidoList: assistidoList,
-                    assistidoProvavel: controller.assistidoProvavelList)
-                : null,
-          ),
-        ),
+        child: userList.isEmpty
+            ? const Center(child: CircularProgressIndicator())
+            : RxBuilder(
+                builder: (BuildContext context) => UserListViewSilver(
+                  controller: controller,
+                  list: controller.faceDetector.value == true
+                      ? controller.userProvavelList.value
+                      : userList,
+                  faceDetectorView: controller.faceDetector.value == true
+                      ? UserFaceDetectorView(
+                          userList: userList,
+                          userProvavel: controller.userProvavelList)
+                      : null,
+                ),
+              ),
       );
 
   Widget customFloatingActionButton(
@@ -187,7 +180,7 @@ class _UserPageState extends State<UserPage> {
             label: 'Reset Comunication',
             labelStyle: const TextStyle(fontSize: 18.0),
             onTap: () async {
-              await controller.assistidosProviderStore.remoteStore.resetAll();
+              await controller.userProviderStore.remoteStore.resetAll();
             },
           ),
           SpeedDialChild(
@@ -218,7 +211,7 @@ class _UserPageState extends State<UserPage> {
             labelStyle: const TextStyle(fontSize: 18.0),
             onTap: () => Modular.to.pushNamed(
               "insert",
-              arguments: {"assistido": null},
+              arguments: {"user": null},
             ),
           ),
           SpeedDialChild(
@@ -248,27 +241,25 @@ class _UserPageState extends State<UserPage> {
             actions: [
               ElevatedButton(
                   onPressed: () async {
-                    final dateSelected = (await controller
-                        .assistidosProviderStore
+                    final dateSelected = (await controller.userProviderStore
                         .getConfig("dateSelected"))?[0];
-                    final itensList = await controller.assistidosProviderStore
+                    final itensList = await controller.userProviderStore
                         .getConfig("itensList");
                     if (itensList != null &&
                         dateSelected != null &&
                         itensList.length > 1) {
                       var itensRemove = dateSelected;
                       if (itensList.last != itensRemove) {
-                        controller.assistidosProviderStore
+                        controller.userProviderStore
                             .setConfig("dateSelected", [itensList.last]);
                       } else {
-                        controller.assistidosProviderStore.setConfig(
-                            "dateSelected",
+                        controller.userProviderStore.setConfig("dateSelected",
                             [itensList.elementAt(itensList.length - 2)]);
                       }
                       final itens = itensList
                           .where((element) => element != itensRemove)
                           .toList();
-                      controller.assistidosProviderStore
+                      controller.userProviderStore
                           .setConfig("itensList", itens);
                     } else {
                       //Fazer uma mensagem de erro informando que não pode remover todos os elementos.
@@ -314,12 +305,12 @@ class _UserPageState extends State<UserPage> {
                   child: const Text("Cancelar")),
               ElevatedButton(
                   onPressed: () async {
-                    final itensList = await controller.assistidosProviderStore
+                    final itensList = await controller.userProviderStore
                         .getConfig("itensList");
                     if (itensList != null) {
-                      controller.assistidosProviderStore
+                      controller.userProviderStore
                           .setConfig("itensList", itensList + [value]);
-                      controller.assistidosProviderStore
+                      controller.userProviderStore
                           .setConfig("dateSelected", [value]);
                       Modular.to.pop();
                     } else {

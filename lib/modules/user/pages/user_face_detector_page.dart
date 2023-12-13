@@ -5,16 +5,16 @@ import '../models/stream_user_model.dart';
 
 class UserFaceDetectorPage extends StatelessWidget {
   final String title;
-  final StreamUser? assistido;
-  final List<StreamUser>? assistidos;
-  final RxNotifier<List<StreamUser>>? assistidoProvavel;
+  final StreamUser? user;
+  final List<StreamUser>? users;
+  final RxNotifier<List<StreamUser>>? userProvavel;
   final RxNotifier<bool>? isPhotoChanged;
   const UserFaceDetectorPage({
     super.key,
     required this.title,
-    this.assistido,
-    this.assistidos,
-    this.assistidoProvavel,
+    this.user,
+    this.users,
+    this.userProvavel,
     this.isPhotoChanged,
   });
 
@@ -23,9 +23,9 @@ class UserFaceDetectorPage extends StatelessWidget {
     return Scaffold(
         appBar: AppBar(title: Text(title)),
         body: UserFaceDetectorView(
-          assistido: assistido,
-          assistidoList: assistidos,
-          assistidoProvavel: assistidoProvavel,
+          user: user,
+          userList: users,
+          userProvavel: userProvavel,
           stackFit: StackFit.expand,
           isPhotoChanged: isPhotoChanged,
         ));

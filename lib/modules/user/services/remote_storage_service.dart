@@ -7,14 +7,14 @@ import 'package:flutter_modular/flutter_modular.dart';
 import '../interfaces/remote_storage_interface.dart';
 import '../models/device_info_model.dart';
 
-class AssistidoRemoteStorageService implements RemoteStorageInterface {
+class UserRemoteStorageService implements RemoteStorageInterface {
   late final Dio provider;
   final String baseUrl = 'https://script.google.com';
   final DeviceInfoModel deviceInfoModel = DeviceInfoModel()
     ..initPlatformState();
   //static int _countConnection = 0;
 
-  AssistidoRemoteStorageService({Dio? provider}) {
+  UserRemoteStorageService({Dio? provider}) {
     this.provider = provider ?? Modular.get<Dio>();
   }
 

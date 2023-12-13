@@ -24,11 +24,11 @@ class UserModule extends Module {
   void binds(Injector i) {
     i.addSingleton<UserController>(
       () => UserController(
-        assistidosProviderStore: UserProviderStore(
+        userProviderStore: UserProviderStore(
           syncStore: SyncStorageService(),
           localStore: UserStorageService(),
           configStore: ConfigStorageService(),
-          remoteStore: AssistidoRemoteStorageService(provider: Dio()),
+          remoteStore: UserRemoteStorageService(provider: Dio()),
           faceDetectionService: FaceDetectionService(
             faceDetector: FaceDetector(
               options: FaceDetectorOptions(
@@ -78,8 +78,8 @@ class UserModule extends Module {
       '/faces',
       child: (_) => UserFaceDetectorPage(
         title: "Camera Ativa",
-        assistido: r.args.data["assistido"],
-        assistidos: r.args.data["assistidos"],
+        user: r.args.data["user"],
+        users: r.args.data["users"],
         isPhotoChanged: r.args.data["isPhotoChanged"],
       ),
       transition: TransitionType.custom,
@@ -95,7 +95,7 @@ class UserModule extends Module {
     r.child(
       '/insert',
       child: (_) => UserEditInsertPage(
-        assistido: r.args.data["assistido"],
+        user: r.args.data["user"],
       ),
       transition: TransitionType.custom,
       customTransition: CustomTransition(
