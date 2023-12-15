@@ -3,9 +3,9 @@ import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 
 import '../../utils/constants.dart';
+import '../../utils/models/user_model.dart';
 import 'login_controller.dart';
 import '../../utils/models/event_object.dart';
-import 'models/user_model.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -36,12 +36,12 @@ class _LoginPageState extends State<LoginPage> {
               key: globalKey,
               backgroundColor: Colors.white,
               body: isInit.data == true
-                  ? _loginContainer()
+                  ? _loginContainer(context)
                   : const Center(child: CircularProgressIndicator()),
             ));
   }
 
-  Widget _loginContainer() {
+  Widget _loginContainer(BuildContext context) {
     return ListView(
       children: <Widget>[
         Center(
@@ -49,9 +49,7 @@ class _LoginPageState extends State<LoginPage> {
             children: <Widget>[
               _appIcon(),
               _loginNowLabel(),
-              _formContainer(),
-              _notRegisterdLabel(),
-              _registerNowLabel(),
+              _formContainer(context),
             ],
           ),
         ),
@@ -84,7 +82,7 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  Widget _formContainer() {
+  Widget _formContainer(BuildContext context) {
     return Container(
       margin: const EdgeInsets.only(top: 20.0, left: 25.0, right: 25.0),
       child: Column(children: <Widget>[
@@ -94,7 +92,7 @@ class _LoginPageState extends State<LoginPage> {
             children: <Widget>[_usernameContainer(), _passwordContainer()],
           ),
         ),
-        _loginButtonContainer(),
+        _loginButtonContainer(context),
       ]),
     );
   }
@@ -143,7 +141,7 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  Widget _loginButtonContainer() {
+  Widget _loginButtonContainer(BuildContext context) {
     return Padding(
         padding: const EdgeInsets.all(25.0),
         child: Container(
@@ -155,7 +153,7 @@ class _LoginPageState extends State<LoginPage> {
           child: MaterialButton(
             textColor: Colors.white,
             padding: const EdgeInsets.all(15.0),
-            onPressed: _loginButtonAction,
+            onPressed: () => _loginButtonAction(context),
             child: const Text(
               Texts.LOGIN,
               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20.0),
@@ -164,55 +162,40 @@ class _LoginPageState extends State<LoginPage> {
         ));
   }
 
-  Widget _notRegisterdLabel() {
-    return const Text(
-      Texts.NEW_USER,
-      style: TextStyle(fontSize: 25.0),
-    );
-  }
-
-  Widget _registerNowLabel() {
-    return GestureDetector(
-      onTap: null,
-      child: Container(
-          margin: const EdgeInsets.only(bottom: 30.0),
-          child: Text(
-            Texts.REGISTER_NOW,
-            style: TextStyle(fontSize: 25.0, color: Colors.blue[500]),
-          )),
-    );
-  }
-
-  void _loginButtonAction() {
+  void _loginButtonAction(BuildContext context) {
     if (usernameController.text == "") {
-      //globalKey.currentState.showSnackBar(new SnackBar(
-      //  content: new Text(SnackBarText.ENTER_USERNAME),
-      //));
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text(SnackBarText.ENTER_USERNAME),
+      ));
       return;
     }
 
     if (passwordController.text == "") {
-      // globalKey.currentState.showSnackBar(new SnackBar(
-      //  content: new Text(SnackBarText.ENTER_PASS),
-      //));
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+        content: Text(SnackBarText.ENTER_PASS),
+      ));
       return;
     }
     FocusScope.of(context).requestFocus(FocusNode());
-    _getUserToken(usernameController.text, passwordController.text);
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Iniciando conexão!!')),
+    );
+    _getUserToken(context, usernameController.text, passwordController.text);
   }
 
-  void _getUserToken(String username, String password) async {
+  void _getUserToken(
+      BuildContext context, String username, String password) async {
     EventObject eventObject =
         await controller.moodleProvider.getTokenByLogin(username, password);
     switch (eventObject.id) {
       case EventConstants.LOGIN_USER_SUCCESSFUL:
         {
-          setState(() async {
+          setState(() {
             userToken = eventObject.object as String;
-            await controller.moodleLocalStorage.setUserToken(userToken);
-            // globalKey.currentState.showSnackBar(new SnackBar(
-            ///  content: new Text(SnackBarText.LOGIN_SUCCESSFUL),
-            // ));
+            controller.moodleLocalStorage.setUserToken(userToken);
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text(SnackBarText.LOGIN_SUCCESSFUL)),
+            );
             _userDetailsAction();
           });
         }
@@ -220,18 +203,18 @@ class _LoginPageState extends State<LoginPage> {
       case EventConstants.LOGIN_USER_UN_SUCCESSFUL:
         {
           setState(() {
-            //globalKey.currentState.showSnackBar(new SnackBar(
-            //   content: new Text(SnackBarText.LOGIN_UN_SUCCESSFUL),
-            //));
+            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+              content: Text(SnackBarText.LOGIN_UN_SUCCESSFUL),
+            ));
           });
         }
         break;
       case EventConstants.NO_INTERNET_CONNECTION:
         {
           setState(() {
-            // globalKey.currentState.showSnackBar(new SnackBar(
-            //  content: new Text(SnackBarText.NO_INTERNET_CONNECTION),
-            // ));
+            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+              content: Text(SnackBarText.NO_INTERNET_CONNECTION),
+            ));
           });
         }
         break;
@@ -249,13 +232,15 @@ class _LoginPageState extends State<LoginPage> {
     switch (eventObject.id) {
       case EventConstants.LOGIN_USER_SUCCESSFUL:
         {
-          setState(() async {
-            await controller.moodleLocalStorage.setUserLoggedIn(true);
-            await controller.moodleLocalStorage
+          setState(() {
+            controller.moodleLocalStorage.setUserLoggedIn(true);
+            controller.moodleLocalStorage
                 .setUserProfile(eventObject.object as User);
-            //globalKey.currentState.showSnackBar(new SnackBar(
-            //  content: new Text(SnackBarText.LOGIN_SUCCESSFUL),
-            //));
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text(SnackBarText.LOGIN_SUCCESSFUL),
+              ),
+            );
             Modular.to.pushNamed("/home/");
           });
         }
@@ -263,18 +248,18 @@ class _LoginPageState extends State<LoginPage> {
       case EventConstants.LOGIN_USER_UN_SUCCESSFUL:
         {
           setState(() {
-            //globalKey.currentState.showSnackBar(new SnackBar(
-            //  content: new Text(SnackBarText.LOGIN_UN_SUCCESSFUL),
-            //));
+            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+              content: Text(SnackBarText.LOGIN_UN_SUCCESSFUL),
+            ));
           });
         }
         break;
       case EventConstants.NO_INTERNET_CONNECTION:
         {
           setState(() {
-            // globalKey.currentState.showSnackBar(new SnackBar(
-            //   content: new Text(SnackBarText.NO_INTERNET_CONNECTION),
-            // ));
+            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+              content: Text(SnackBarText.NO_INTERNET_CONNECTION),
+            ));
           });
         }
         break;

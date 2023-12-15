@@ -9,6 +9,9 @@ class Token extends HiveObject {
   String privatetoken;
 
   Token({required this.token, required this.privatetoken});
+  Token.empty()
+      : token = "",
+        privatetoken = "";
 
   Token.fromJson(Map<String, dynamic> json)
       : token = json['token'] as String,

@@ -1,9 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 
+import '../models/user_model.dart';
+
 class NavDrawer extends StatelessWidget {
+  final User? user;
   const NavDrawer({
     super.key,
+    required this.user,
   });
 
   @override
@@ -11,7 +16,13 @@ class NavDrawer extends StatelessWidget {
     return _buildDrawer(context);
   }
 
-  _buildDrawer(BuildContext context) {
+  _buildDrawer(BuildContext context) async {
+    final ByteData imageData =
+        await NetworkAssetBundle(Uri.parse('https://picsum.photos/250?image=9'))
+            .load("");
+    final Uint8List bytes = imageData.buffer.asUint8List();
+    var imagem = NetworkImage(
+        'http://moodle.ufu.br/pluginfile.php/51865/user/icon/boost/f1?rev=1');
     return ClipPath(
       child: Drawer(
         child: Container(
@@ -46,16 +57,18 @@ class NavDrawer extends StatelessWidget {
                           ]
                         )*/
                       ),
-                      child: const CircleAvatar(
+                      child: CircleAvatar(
                         radius: 60,
-                        backgroundImage: NetworkImage(
-                            "https://avatars0.githubusercontent.com/u/38448422?s=460&u=21b610183d275611a9bc0f730653d931b39f2d0b&v=4"),
+                        backgroundImage: imagem,
+                        backgroundColor: Colors.transparent,
                       ),
                     ),
                   ),
                   const SizedBox(height: 5.0),
-                  const Text("Deepak Sharma"),
-                  const Text("@webaddicted"),
+                  Text(user == null
+                      ? ""
+                      : '${user!.firstname} ${user!.lastname}'),
+                  Text(user == null ? "" : "@${user!.username}"),
                   const SizedBox(height: 30.0),
                   _buildRow(Icons.home, "Home"),
                   _buildDivider(),

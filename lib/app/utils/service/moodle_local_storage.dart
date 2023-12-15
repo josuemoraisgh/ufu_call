@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:hive_flutter/hive_flutter.dart';
 import '../constants.dart';
-import '../../modules/login/models/user_model.dart';
+import '../models/user_model.dart';
 
 class MoodleLocalStorage {
   Completer<Box<List<String>>> configCompleter = Completer<Box<List<String>>>();

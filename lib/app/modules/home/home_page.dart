@@ -6,7 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../../utils/constants.dart';
 import '../../utils/models/category.dart';
-import '../login/models/user_model.dart';
+import '../../utils/models/user_model.dart';
 import '../../utils/models_view/nav_drawer.dart';
 import 'home_controller.dart';
 
@@ -34,8 +34,9 @@ class HomePageState extends State<HomePage> {
   }
 
   Future<void> initUserProfile() async {
-    setState(() async {
-      user = await controller.moodleLocalStorage.getUserProfile();
+    final userLocal = await controller.moodleLocalStorage.getUserProfile();
+    setState(() {
+      user = userLocal;
     });
   }
 
@@ -104,7 +105,7 @@ class HomePageState extends State<HomePage> {
           title: Texts.APP_NAME,
           //bgColor: ColorConst.WHITE_BG_COLOR,
           icon: homeIcon),
-      drawer: const NavDrawer(),
+      drawer: NavDrawer(user: user),
       body: _createUi(),
     );
   }
@@ -189,7 +190,7 @@ class HomePageState extends State<HomePage> {
                         topLeft: Radius.circular(5)),
                     image: DecorationImage(
                         fit: BoxFit.cover,
-                        image: AssetImage("assets/images/appicon.png")),
+                        image: AssetImage("assets/icon/ufuIcon.png")),
                   ),
                 ),
               ),

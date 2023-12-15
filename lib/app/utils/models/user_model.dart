@@ -24,6 +24,14 @@ class User extends HiveObject {
       required this.userid,
       required this.userpictureurl});
 
+  User.empty()
+      : username = "",
+        firstname = "",
+        lastname = "",
+        lang = "",
+        userid = -1,
+        userpictureurl = "";
+
   User.fromJson(Map<String, dynamic> json)
       : username = json['username'] as String,
         firstname = json['firstname'] as String,

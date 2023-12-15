@@ -5,7 +5,7 @@ import '../../app_module.dart';
 import 'pages/students_edit_insert_page.dart';
 import 'pages/students_face_detector_page.dart';
 import 'provider/students_provider_store.dart';
-import 'services/remote_storage_service.dart';
+import 'provider/remote_storage_service.dart';
 import 'services/students_storage_service.dart';
 import 'services/sync_storage_service.dart';
 import 'students_page.dart';

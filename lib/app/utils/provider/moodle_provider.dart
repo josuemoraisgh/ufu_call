@@ -1,24 +1,33 @@
 import 'dart:async';
-import 'dart:convert';
-import 'package:http/http.dart' as http;
-
+import 'dart:io';
+import 'package:dio/dio.dart';
+import 'package:flutter_modular/flutter_modular.dart';
 import '../models/event_object.dart';
-import '../../modules/login/models/token_model.dart';
-import '../../modules/login/models/user_model.dart';
 import '../constants.dart';
+import '../models/token_model.dart';
+import '../models/user_model.dart';
 
 class MoodleProvider {
+  late final Dio providerHttp;
+  MoodleProvider({Dio? providerHttp}) {
+    this.providerHttp = providerHttp ?? Modular.get<Dio>();
+  }
+
   Future<EventObject> getTokenByLogin(String username, String password) async {
     String currentUrl =
         APIConstants.API_BASE_URL + APIOperations.getTokenByLogin;
 
     try {
-      final response = await http.post(Uri.parse(currentUrl),
-          body: {'username': username, 'password': password});
+      final response = await providerHttp.post(
+        currentUrl,
+        options: Options(headers: {
+          HttpHeaders.contentTypeHeader: "application/json",
+        }),
+        queryParameters: {'username': username, 'password': password},
+      );
 
       if (response.statusCode == APIResponseCode.SC_OK) {
-        final responseJson = json.decode(response.body);
-        Token result = Token.fromJson(responseJson);
+        Token result = Token.fromJson(response.data);
         return EventObject(
             id: EventConstants.LOGIN_USER_SUCCESSFUL, object: result.token);
       } else {
@@ -34,10 +43,9 @@ class MoodleProvider {
         '${APIConstants.API_BASE_URL}${APIOperations.fetchUserDetail}&wstoken=$token';
 
     try {
-      final response = await http.get(Uri.parse(currentUrl));
+      final response = await providerHttp.get(currentUrl);
       if (response.statusCode == APIResponseCode.SC_OK) {
-        final responseJson = json.decode(response.body);
-        User user = User.fromJson(responseJson);
+        User user = User.fromJson(response.data);
         return EventObject(
             id: EventConstants.LOGIN_USER_SUCCESSFUL, object: user);
       } else {
@@ -48,6 +56,34 @@ class MoodleProvider {
     }
   }
 
+  Future<EventObject> getUserCourses(Token token, User user) async {
+    String currentUrl =
+        APIConstants.API_BASE_URL + APIOperations.getTokenByLogin;
+
+    try {
+      final response = await providerHttp.post(
+        currentUrl,
+        options: Options(headers: {
+          HttpHeaders.contentTypeHeader: "application/json",
+        }),
+        queryParameters: {
+          'wstoken': token.token,
+          'userid': user.userid,
+          'wsfunction': 'core_enrol_get_users_courses'
+        },
+      );
+
+      if (response.statusCode == APIResponseCode.SC_OK) {
+        Token result = Token.fromJson(response.data);
+        return EventObject(
+            id: EventConstants.LOGIN_USER_SUCCESSFUL, object: result.token);
+      } else {
+        return EventObject(id: EventConstants.LOGIN_USER_UN_SUCCESSFUL);
+      }
+    } on Exception {
+      return EventObject();
+    }
+  }
   /*Future<EventObject> registerUser(
     String name, String emailId, String password) async {
  UserRequest userRequest = new UserRequest();
