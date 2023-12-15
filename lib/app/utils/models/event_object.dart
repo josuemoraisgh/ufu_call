@@ -1,4 +1,4 @@
-import '../../../../utils/constants.dart';
+import '../constants.dart';
 
 class EventObject {
   int id;

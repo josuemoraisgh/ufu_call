@@ -7,18 +7,21 @@ import 'modules/login/login_module.dart';
 import 'notfound_page.dart';
 import 'splash_page.dart';
 import 'utils/faces/camera_controle_service.dart';
+import 'utils/provider/moodle_provider.dart';
 
 class AppModule extends Module {
   @override
   void exportedBinds(Injector i) {
     i.addInstance<CameraService>(CameraService());
     i.addInstance<MoodleLocalStorage>(MoodleLocalStorage());
+    i.addInstance<MoodleProvider>(MoodleProvider());
   }
 
   @override
   void routes(RouteManager r) {
     r.child('/', child: (context) => const SplashPage());
-    r.module('/user', module: StudentsModule());
+    r.module('/students', module: StudentsModule());
+    r.module('/home', module: StudentsModule());
     r.module('/login', module: LoginModule());
     r.module('/config', module: ConfigModule());
     r.module('/info', module: InfoModule());

@@ -4,7 +4,8 @@ import 'package:flutter_modular/flutter_modular.dart';
 
 import '../../utils/constants.dart';
 import 'login_controller.dart';
-import 'models/base/event_object.dart';
+import '../../utils/models/event_object.dart';
+import 'models/user_model.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -21,13 +22,23 @@ class _LoginPageState extends State<LoginPage> {
   var usernameController = TextEditingController(text: "");
   var passwordController = TextEditingController(text: "");
 
+  Future<bool> init() async {
+    await controller.moodleLocalStorage.init();
+    return true;
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      key: globalKey,
-      backgroundColor: Colors.white,
-      body: _loginContainer(),
-    );
+    return FutureBuilder(
+        initialData: false,
+        future: init(),
+        builder: (context, isInit) => Scaffold(
+              key: globalKey,
+              backgroundColor: Colors.white,
+              body: isInit.data == true
+                  ? _loginContainer()
+                  : const Center(child: CircularProgressIndicator()),
+            ));
   }
 
   Widget _loginContainer() {
@@ -52,7 +63,7 @@ class _LoginPageState extends State<LoginPage> {
     return Container(
       margin: const EdgeInsets.only(top: 20.0),
       child: const Image(
-        image: AssetImage("assets/images/appicon.png"),
+        image: AssetImage("assets/icon/ufuIcon.png"),
         height: 170.0,
         width: 170.0,
       ),
@@ -162,7 +173,7 @@ class _LoginPageState extends State<LoginPage> {
 
   Widget _registerNowLabel() {
     return GestureDetector(
-      onTap: _goToRegisterScreen,
+      onTap: null,
       child: Container(
           margin: const EdgeInsets.only(bottom: 30.0),
           child: Text(
@@ -192,12 +203,12 @@ class _LoginPageState extends State<LoginPage> {
 
   void _getUserToken(String username, String password) async {
     EventObject eventObject =
-        await controller.moodleLocalStorage.getTokenByLogin(username, password);
+        await controller.moodleProvider.getTokenByLogin(username, password);
     switch (eventObject.id) {
       case EventConstants.LOGIN_USER_SUCCESSFUL:
         {
           setState(() async {
-            userToken = eventObject.object;
+            userToken = eventObject.object as String;
             await controller.moodleLocalStorage.setUserToken(userToken);
             // globalKey.currentState.showSnackBar(new SnackBar(
             ///  content: new Text(SnackBarText.LOGIN_SUCCESSFUL),
@@ -228,25 +239,24 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   void _userDetailsAction() {
-    FocusScope.of(context).requestFocus(new FocusNode());
-    progressDialog
-        .showProgressWithText(ProgressDialogTitles.login_progress_fetch_detail);
+    FocusScope.of(context).requestFocus(FocusNode());
     _getUserDetails();
   }
 
   void _getUserDetails() async {
-    EventObject eventObject = await fetchUserDetail(userToken);
+    EventObject eventObject =
+        await controller.moodleProvider.fetchUserDetail(userToken);
     switch (eventObject.id) {
       case EventConstants.LOGIN_USER_SUCCESSFUL:
         {
-          setState(() {
-            AppSharedPreferences.setUserLoggedIn(true);
-            AppSharedPreferences.setUserProfile(eventObject.object);
+          setState(() async {
+            await controller.moodleLocalStorage.setUserLoggedIn(true);
+            await controller.moodleLocalStorage
+                .setUserProfile(eventObject.object as User);
             //globalKey.currentState.showSnackBar(new SnackBar(
             //  content: new Text(SnackBarText.LOGIN_SUCCESSFUL),
             //));
-            progressDialog.hideProgress();
-            _goToStartScreen();
+            Modular.to.pushNamed("/home/");
           });
         }
         break;
@@ -256,7 +266,6 @@ class _LoginPageState extends State<LoginPage> {
             //globalKey.currentState.showSnackBar(new SnackBar(
             //  content: new Text(SnackBarText.LOGIN_UN_SUCCESSFUL),
             //));
-            progressDialog.hideProgress();
           });
         }
         break;
@@ -266,24 +275,9 @@ class _LoginPageState extends State<LoginPage> {
             // globalKey.currentState.showSnackBar(new SnackBar(
             //   content: new Text(SnackBarText.NO_INTERNET_CONNECTION),
             // ));
-            progressDialog.hideProgress();
           });
         }
         break;
     }
-  }
-
-  void _goToStartScreen() {
-    Navigator.pushReplacement(
-      context,
-      new MaterialPageRoute(builder: (context) => new StartScreen()),
-    );
-  }
-
-  void _goToRegisterScreen() {
-    Navigator.pushReplacement(
-      context,
-      new MaterialPageRoute(builder: (context) => new RegisterScreen()),
-    );
   }
 }
