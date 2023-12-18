@@ -82,16 +82,16 @@ class APIOperations {
       "login/token.php?service=moodle_mobile_app&moodlewsrestformat=json";
   static const String getPublicConfig =
       "lib/ajax/service.php?info=tool_mobile_get_public_config";
-  static const String checkToken =
+  static const String getCourseContent =
       "webservice/rest/server.php?wsfunction=core_webservice_get_site_info&moodlewsrestformat=json";
+  static const String getUsersByCourseId =
+      "webservice/rest/server.php?wsfunction=core_enrol_get_enrolled_users&moodlewsrestformat=json";
   static const String getUserCourses =
       "webservice/rest/server.php?wsfunction=core_enrol_get_users_courses&moodlewsrestformat=json";
   static const String getCourses =
       "webservice/rest/server.php?wsfunction=core_course_get_courses&moodlewsrestformat=json";
   static const String getCategories =
       "webservice/rest/server.php?wsfunction=core_course_get_categories&moodlewsrestformat=json";
-  static const String getCourseContent =
-      "webservice/rest/server.php?wsfunction=core_course_get_contents&moodlewsrestformat=json";
 }
 
 class EventConstants {
@@ -198,7 +198,7 @@ class SnackBarText {
 
 class Texts {
   // ignore: constant_identifier_names
-  static const String APP_NAME = "Moodle Flutter";
+  static const String APP_NAME = "Cursos do Moodle";
   // ignore: constant_identifier_names
   static const String REGISTER_NOW = "Register Now!";
   // ignore: constant_identifier_names

@@ -6,6 +6,8 @@ import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:hive/hive.dart';
 import 'package:rx_notifier/rx_notifier.dart';
+import 'package:ufu_call/app/modules/students/models/students_models.dart';
+import '../../utils/models/token_model.dart';
 import 'modelsView/students_listview_silver.dart';
 import 'students_controller.dart';
 import 'models/stream_students_model.dart';
@@ -14,8 +16,9 @@ import 'modelsView/custom_search_bar.dart';
 import 'modelsView/dropdown_body.dart';
 
 class StudentsPage extends StatefulWidget {
-  final Map<String, dynamic> dadosTela;
-  const StudentsPage({super.key, required this.dadosTela});
+  final String courseId;
+  final Token token;
+  const StudentsPage({super.key, required this.courseId, required this.token});
 
   @override
   State<StudentsPage> createState() => _StudentsPageState();
@@ -25,49 +28,59 @@ class _StudentsPageState extends State<StudentsPage> {
   final StudentsController controller = Modular.get<StudentsController>();
   final DropdownBody assistidosDropdownButton =
       DropdownBody(controller: Modular.get<StudentsController>());
+  List<Students>? students;
+
   @override
   void initState() {
-    controller.init();
     super.initState();
   }
 
+  Future<bool> init() async {
+    await controller.init();
+    var students = await controller.moodleProvider
+        .getUsersByCourseId(widget.courseId, widget.token);
+    return true;
+  }
+
   @override
-  Widget build(BuildContext context) => ValueListenableBuilder<bool>(
-        valueListenable: controller.isInitedController,
-        builder: (BuildContext context, bool isInited, _) => isInited
-            ? ValueListenableBuilder<Box>(
-                valueListenable: controller
-                    .listenablStudents, //controller.assistidosStoreList.stream,
-                builder: (BuildContext context, Box box, _) =>
-                    ValueListenableBuilder(
-                  valueListenable: controller.textEditing,
-                  builder: (BuildContext context,
-                      TextEditingValue textEditingValue, _) {
-                    List<StreamStudents> list = box.values
-                        .map((e) =>
-                            StreamStudents(e, controller.studentsProviderStore))
-                        .toList();
-                    if (isInited) {
-                      list = controller.search(
-                        list,
-                        textEditingValue.text,
-                        'ATIVO',
-                      );
-                    }
-                    return Scaffold(
-                      appBar: customAppBar(isInited),
-                      body: customBody(context, list),
-                      floatingActionButton:
-                          customFloatingActionButton(context, list),
-                    );
-                  },
-                ),
-              )
-            : Scaffold(
-                appBar: customAppBar(isInited),
-                body: customBody(context, []),
-                floatingActionButton: customFloatingActionButton(context, []),
-              ),
+  Widget build(BuildContext context) => FutureBuilder(
+        future: init(),
+        builder: (BuildContext context, AsyncSnapshot<bool> isInited) =>
+            isInited.data == true
+                ? ValueListenableBuilder<Box>(
+                    valueListenable: controller
+                        .listenablStudents, //controller.assistidosStoreList.stream,
+                    builder: (BuildContext context, Box box, _) =>
+                        ValueListenableBuilder(
+                      valueListenable: controller.textEditing,
+                      builder: (BuildContext context,
+                          TextEditingValue textEditingValue, _) {
+                        List<StreamStudents> list = box.values
+                            .map((e) => StreamStudents(
+                                e, controller.studentsProviderStore))
+                            .toList();
+                        if (isInited.hasData) {
+                          list = controller.search(
+                            list,
+                            textEditingValue.text,
+                            'ATIVO',
+                          );
+                        }
+                        return Scaffold(
+                          appBar: customAppBar(isInited.hasData),
+                          body: customBody(context, list),
+                          floatingActionButton:
+                              customFloatingActionButton(context, list),
+                        );
+                      },
+                    ),
+                  )
+                : Scaffold(
+                    appBar: customAppBar(isInited.hasData),
+                    body: customBody(context, []),
+                    floatingActionButton:
+                        customFloatingActionButton(context, []),
+                  ),
       );
 
   AppBar customAppBar(bool isInited) => AppBar(
@@ -133,11 +146,11 @@ class _StudentsPageState extends State<StudentsPage> {
       Container(
         width: MediaQuery.of(context).size.width,
         height: MediaQuery.of(context).size.height,
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           image: DecorationImage(
-            colorFilter: const ColorFilter.mode(
+            colorFilter: ColorFilter.mode(
                 Color.fromRGBO(240, 240, 240, 0.5), BlendMode.modulate),
-            image: AssetImage(widget.dadosTela['img']),
+            image: AssetImage('assets/images/background.png'),
             fit: BoxFit.cover,
           ),
         ),

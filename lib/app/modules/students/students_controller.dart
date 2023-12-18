@@ -6,6 +6,8 @@ import 'package:hive/hive.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:rx_notifier/rx_notifier.dart';
 import '../../utils/constants.dart';
+import '../../utils/provider/moodle_provider.dart';
+import '../../utils/service/moodle_local_storage.dart';
 import 'models/students_models.dart';
 import 'models/stream_students_model.dart';
 import 'provider/students_provider_store.dart';
@@ -23,9 +25,18 @@ class StudentsController {
   late final ValueListenable<Box<Students>> listenablStudents;
   late final StudentsProviderStore studentsProviderStore;
 
-  StudentsController({StudentsProviderStore? studentsProviderStore}) {
+  late final MoodleLocalStorage moodleLocalStorage;
+  late final MoodleProvider moodleProvider;
+
+  StudentsController(
+      {StudentsProviderStore? studentsProviderStore,
+      MoodleLocalStorage? moodleLocalStorage,
+      MoodleProvider? moodleProvider}) {
     this.studentsProviderStore =
         studentsProviderStore ?? Modular.get<StudentsProviderStore>();
+    this.moodleLocalStorage =
+        moodleLocalStorage ?? Modular.get<MoodleLocalStorage>();
+    this.moodleProvider = moodleProvider ?? Modular.get<MoodleProvider>();
   }
 
   Future<void> init() async {

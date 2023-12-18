@@ -56,13 +56,9 @@ class StudentsModule extends Module {
   void routes(r) {
     r.child(
       '/',
-      child: (_) => const StudentsPage(
-        dadosTela: {
-          'id': 1,
-          'title': 'Alunos',
-          'img': 'assets/images/background.png',
-          'active': 1
-        },
+      child: (_) => StudentsPage(
+        courseId: r.args.data["courseId"],
+        token: r.args.data["token"],
       ),
       transition: TransitionType.custom,
       customTransition: CustomTransition(

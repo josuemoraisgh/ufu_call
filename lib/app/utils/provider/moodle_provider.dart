@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutter_modular/flutter_modular.dart';
+import 'package:ufu_call/app/utils/models/course.dart';
 import '../models/event_object.dart';
 import '../constants.dart';
 import '../models/token_model.dart';
@@ -29,7 +30,7 @@ class MoodleProvider {
       if (response.statusCode == APIResponseCode.SC_OK) {
         Token result = Token.fromJson(response.data);
         return EventObject(
-            id: EventConstants.LOGIN_USER_SUCCESSFUL, object: result.token);
+            id: EventConstants.LOGIN_USER_SUCCESSFUL, object: result);
       } else {
         return EventObject(id: EventConstants.LOGIN_USER_UN_SUCCESSFUL);
       }
@@ -38,9 +39,9 @@ class MoodleProvider {
     }
   }
 
-  Future<EventObject> fetchUserDetail(String token) async {
+  Future<EventObject> fetchUserDetail(Token token) async {
     String currentUrl =
-        '${APIConstants.API_BASE_URL}${APIOperations.fetchUserDetail}&wstoken=$token';
+        '${APIConstants.API_BASE_URL}${APIOperations.fetchUserDetail}&wstoken=${token.token}';
 
     try {
       final response = await providerHttp.get(currentUrl);
@@ -58,25 +59,43 @@ class MoodleProvider {
 
   Future<EventObject> getUserCourses(Token token, User user) async {
     String currentUrl =
-        APIConstants.API_BASE_URL + APIOperations.getTokenByLogin;
+        '${APIConstants.API_BASE_URL}${APIOperations.getUserCourses}&userid=${user.userid}&wstoken=${token.token}';
 
     try {
-      final response = await providerHttp.post(
-        currentUrl,
-        options: Options(headers: {
-          HttpHeaders.contentTypeHeader: "application/json",
-        }),
-        queryParameters: {
-          'wstoken': token.token,
-          'userid': user.userid,
-          'wsfunction': 'core_enrol_get_users_courses'
-        },
-      );
-
+      final response = await providerHttp.get(currentUrl);
       if (response.statusCode == APIResponseCode.SC_OK) {
-        Token result = Token.fromJson(response.data);
+        List<Course> courses = <Course>[];
+        for (var e in (response.data as List)) {
+          courses.add(
+            Course.fromJson(e),
+          );
+        }
         return EventObject(
-            id: EventConstants.LOGIN_USER_SUCCESSFUL, object: result.token);
+            id: EventConstants.LOGIN_USER_SUCCESSFUL, object: courses);
+      } else {
+        return EventObject(id: EventConstants.LOGIN_USER_UN_SUCCESSFUL);
+      }
+    } on Exception {
+      return EventObject();
+    }
+  }
+
+  Future<EventObject> getUsersByCourseId(
+      String courseId, Token token) async {
+    String currentUrl =
+        '${APIConstants.API_BASE_URL}${APIOperations.getUsersByCourseId}&courseid=$courseId&wstoken=${token.token}';
+
+    try {
+      final response = await providerHttp.get(currentUrl);
+      if (response.statusCode == APIResponseCode.SC_OK) {
+        List<Course> courses = <Course>[];
+        for (var e in (response.data as List)) {
+          courses.add(
+            Course.fromJson(e),
+          );
+        }
+        return EventObject(
+            id: EventConstants.LOGIN_USER_SUCCESSFUL, object: courses);
       } else {
         return EventObject(id: EventConstants.LOGIN_USER_UN_SUCCESSFUL);
       }

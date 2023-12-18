@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_modular/flutter_modular.dart';
-
+import '../models/token_model.dart';
 import '../models/user_model.dart';
 
 class NavDrawer extends StatelessWidget {
-  final User? user;
+  final User user;
+  final Token token;
   const NavDrawer({
     super.key,
     required this.user,
+    required this.token,
   });
 
   @override
@@ -16,13 +17,11 @@ class NavDrawer extends StatelessWidget {
     return _buildDrawer(context);
   }
 
-  _buildDrawer(BuildContext context) async {
-    final ByteData imageData =
-        await NetworkAssetBundle(Uri.parse('https://picsum.photos/250?image=9'))
-            .load("");
-    final Uint8List bytes = imageData.buffer.asUint8List();
+  _buildDrawer(BuildContext context) {
+    //final ByteData imageData = await NetworkAssetBundle(Uri.parse('https://picsum.photos/250?image=9')).load("");
+    //final Uint8List bytes = imageData.buffer.asUint8List();
     var imagem = NetworkImage(
-        'http://moodle.ufu.br/pluginfile.php/51865/user/icon/boost/f1?rev=1');
+        '${user.userpictureurl.replaceFirst("?", "&").replaceFirst(".php", ".php?file=")}&forcedownload=1&token=${token.token}');
     return ClipPath(
       child: Drawer(
         child: Container(
@@ -50,25 +49,18 @@ class NavDrawer extends StatelessWidget {
                       height: 128,
                       alignment: Alignment.center,
                       decoration: const BoxDecoration(
-                        shape: BoxShape.circle,
-                        /*gradient: LinearGradient(colors: [
-                            ColorConst.GREEN_COLOR,
-                            ColorConst.APP_COLOR
-                          ]
-                        )*/
-                      ),
+                          shape: BoxShape.circle,
+                          gradient: LinearGradient(
+                              colors: [Colors.green, Colors.blue])),
                       child: CircleAvatar(
                         radius: 60,
                         backgroundImage: imagem,
-                        backgroundColor: Colors.transparent,
                       ),
                     ),
                   ),
                   const SizedBox(height: 5.0),
-                  Text(user == null
-                      ? ""
-                      : '${user!.firstname} ${user!.lastname}'),
-                  Text(user == null ? "" : "@${user!.username}"),
+                  Text('${user.firstname} ${user.lastname}'),
+                  Text("@${user.username}"),
                   const SizedBox(height: 30.0),
                   _buildRow(Icons.home, "Home"),
                   _buildDivider(),

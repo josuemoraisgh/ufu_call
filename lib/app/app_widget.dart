@@ -11,7 +11,7 @@ class AppWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp.router(
       debugShowCheckedModeBanner: false,
-      title: 'Posto de Assistência',
+      title: 'PRESENÇA NA UFU',
       theme: ConfigureKeys.DARK_MODE != "" ? asLightTheme : asDarkTheme,
       routeInformationParser: Modular.routeInformationParser,
       routerDelegate: Modular.routerDelegate,

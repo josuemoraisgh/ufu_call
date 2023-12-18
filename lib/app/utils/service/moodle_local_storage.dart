@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:hive_flutter/hive_flutter.dart';
 import '../constants.dart';
+import '../models/token_model.dart';
 import '../models/user_model.dart';
 
 class MoodleLocalStorage {
@@ -41,12 +42,12 @@ class MoodleLocalStorage {
     return box.put(ConfigureKeys.APP_USER, [userProfileJson]);
   }
 
-  Future<String> getUserToken() async {
+  Future<Token> getUserToken() async {
     final box = await configCompleter.future;
-    return json.decode(box.get(ConfigureKeys.USER_TOKEN)?[0] ?? "");
+    return Token.fromJson(json.decode(box.get(ConfigureKeys.USER_TOKEN)?[0] ?? ""));
   }
 
-  Future<void> setUserToken(String token) async {
+  Future<void> setUserToken(Token token) async {
     final box = await configCompleter.future;
     String userTokenJson = json.encode(token);
     return box.put(ConfigureKeys.USER_TOKEN, [userTokenJson]);

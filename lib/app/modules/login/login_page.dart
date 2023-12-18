@@ -3,6 +3,7 @@ import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 
 import '../../utils/constants.dart';
+import '../../utils/models/token_model.dart';
 import '../../utils/models/user_model.dart';
 import 'login_controller.dart';
 import '../../utils/models/event_object.dart';
@@ -18,7 +19,7 @@ class _LoginPageState extends State<LoginPage> {
   final globalKey = GlobalKey<ScaffoldState>();
   final GlobalKey<FormBuilderState> _formKey = GlobalKey();
   final LoginController controller = Modular.get<LoginController>();
-  String userToken = "";
+  Token? userToken;
   var usernameController = TextEditingController(text: "");
   var passwordController = TextEditingController(text: "");
 
@@ -191,8 +192,8 @@ class _LoginPageState extends State<LoginPage> {
       case EventConstants.LOGIN_USER_SUCCESSFUL:
         {
           setState(() {
-            userToken = eventObject.object as String;
-            controller.moodleLocalStorage.setUserToken(userToken);
+            userToken = eventObject.object as Token;
+            controller.moodleLocalStorage.setUserToken(userToken!);
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(content: Text(SnackBarText.LOGIN_SUCCESSFUL)),
             );
@@ -228,7 +229,7 @@ class _LoginPageState extends State<LoginPage> {
 
   void _getUserDetails() async {
     EventObject eventObject =
-        await controller.moodleProvider.fetchUserDetail(userToken);
+        await controller.moodleProvider.fetchUserDetail(userToken!);
     switch (eventObject.id) {
       case EventConstants.LOGIN_USER_SUCCESSFUL:
         {
