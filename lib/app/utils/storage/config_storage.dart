@@ -1,6 +1,9 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
+import 'dart:typed_data';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:path_provider/path_provider.dart';
 import '../constants.dart';
 import '../models/token_model.dart';
 import '../models/user_model.dart';
@@ -74,4 +77,32 @@ class ConfigStorage {
     String siteUrlJson = json.encode(token);
     return box.put(ConfigureKeys.SITE_NAME, [siteUrlJson]);
   }
+
+  Future<File> addSetFile(
+      String fileName, final Uint8List uint8ListImage) async {
+    final directory = await getApplicationDocumentsDirectory();
+    //var buffer = uint8ListImage.buffer;
+    //ByteData byteData = ByteData.view(buffer);
+    return File('${directory.path}/$fileName')
+      ..writeAsBytesSync(List<int>.from(uint8ListImage),
+          mode: FileMode.writeOnly, flush: true);
+    //return await File('${directory.path}/$fileName').writeAsBytes(
+    //    buffer.asUint8List(byteData.offsetInBytes, byteData.lengthInBytes),
+    //    mode: FileMode.writeOnly,flush: true);
+  }
+
+  Future<File> getFile(String fileName) async {
+    final directory = await getApplicationDocumentsDirectory();
+    return File('${directory.path}/$fileName');
+    //file.readAsBytes();
+  }
+
+  Future<bool> delFile(String fileName) async {
+    final directory = await getApplicationDocumentsDirectory();
+    if ((await File('${directory.path}/$fileName').exists()) == true) {
+      await File('${directory.path}/$fileName').delete(recursive: true);
+      return true;
+    }
+    return false;
+  }  
 }

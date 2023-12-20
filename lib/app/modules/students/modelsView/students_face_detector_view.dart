@@ -7,7 +7,6 @@ import 'package:rx_notifier/rx_notifier.dart';
 import '../../../utils/faces/camera_controle_service.dart';
 import '../../../utils/faces/camera_preview_with_paint.dart';
 import '../../../utils/faces/image_converter.dart';
-import '../provider/students_provider_store.dart';
 import '../services/face_detection_service.dart';
 import '../../../utils/faces/painters/face_detector_painter.dart';
 import '../students_controller.dart';

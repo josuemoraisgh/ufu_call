@@ -11,6 +11,7 @@ import '../../utils/provider/moodle_provider.dart';
 import '../../utils/storage/config_storage.dart';
 import 'models/stream_students_model.dart';
 import 'provider/chamada_gsheet_provider.dart';
+import 'services/face_detection_service.dart';
 
 class StudentsController {
   final textEditing = TextEditingController(text: "");
@@ -22,32 +23,29 @@ class StudentsController {
   final isRunningSync = RxNotifier<bool>(false);
   final countSync = RxNotifier<int>(0);
 
-  late final ValueListenable<Box<Students>> listenablStudents;
   late final ChamadaGsheetProvider chamadaGsheetProvider;
-
-  late final ConfigStorage moodleLocalStorage;
+  late final ConfigStorage configStorage;
   late final MoodleProvider moodleProvider;
+  late final FaceDetectionService faceDetectionService;
 
   StudentsController(
       {ChamadaGsheetProvider? chamadaGsheetProvider,
-      ConfigStorage? moodleLocalStorage,
-      MoodleProvider? moodleProvider}) {
+      ConfigStorage? configStorage,
+      MoodleProvider? moodleProvider,
+      FaceDetectionService? faceDetectionService}) {
     this.chamadaGsheetProvider =
         chamadaGsheetProvider ?? Modular.get<ChamadaGsheetProvider>();
-    this.moodleLocalStorage =
-        moodleLocalStorage ?? Modular.get<ConfigStorage>();
+    this.configStorage =
+        configStorage ?? Modular.get<ConfigStorage>();
     this.moodleProvider = moodleProvider ?? Modular.get<MoodleProvider>();
+this.faceDetectionService =
+        faceDetectionService ?? Modular.get<FaceDetectionService>();    
   }
 
   Future<void> init() async {
     if (isInitedController.value == false) {
-      listenablStudents = (await chamadaGsheetProvider.localStore.listenable());
-      (await ChamadaGsheetProvider.syncStore.listenable())
-          .addListener(() => sync());
-      await sync();
+      configStorage.init();
       isInitedController.value = true;
-    } else {
-      sync();
     }
   }
 

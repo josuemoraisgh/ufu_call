@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:ufu_call/app/utils/models/course.dart';
+import 'package:ufu_call/app/utils/models/students_model.dart';
 import '../models/event_object.dart';
 import '../constants.dart';
 import '../models/token_model.dart';
@@ -88,14 +89,14 @@ class MoodleProvider {
     try {
       final response = await providerHttp.get(currentUrl);
       if (response.statusCode == APIResponseCode.SC_OK) {
-        List<Course> courses = <Course>[];
+        List<Students> students = <Students>[];
         for (var e in (response.data as List)) {
-          courses.add(
-            Course.fromJson(e),
+          students.add(
+            Students.fromJson(e),
           );
         }
         return EventObject(
-            id: EventConstants.LOGIN_USER_SUCCESSFUL, object: courses);
+            id: EventConstants.LOGIN_USER_SUCCESSFUL, object: students);
       } else {
         return EventObject(id: EventConstants.LOGIN_USER_UN_SUCCESSFUL);
       }

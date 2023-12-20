@@ -4,9 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
-import 'package:hive/hive.dart';
 import 'package:rx_notifier/rx_notifier.dart';
-import 'package:ufu_call/app/modules/students/models/students_models.dart';
+import '../../utils/models/students_model.dart';
 import '../../utils/models/token_model.dart';
 import 'modelsView/students_listview_silver.dart';
 import 'students_controller.dart';
@@ -37,8 +36,8 @@ class _StudentsPageState extends State<StudentsPage> {
 
   Future<bool> init() async {
     await controller.init();
-    var students = await controller.moodleProvider
-        .getUsersByCourseId(widget.courseId, widget.token);
+    students = (await controller.moodleProvider
+        .getUsersByCourseId(widget.courseId, widget.token)).object as List<Students>;
     return true;
   }
 
@@ -47,17 +46,12 @@ class _StudentsPageState extends State<StudentsPage> {
         future: init(),
         builder: (BuildContext context, AsyncSnapshot<bool> isInited) =>
             isInited.data == true
-                ? ValueListenableBuilder<Box>(
-                    valueListenable: controller
-                        .listenablStudents, //controller.assistidosStoreList.stream,
-                    builder: (BuildContext context, Box box, _) =>
-                        ValueListenableBuilder(
+                ? ValueListenableBuilder(
                       valueListenable: controller.textEditing,
                       builder: (BuildContext context,
                           TextEditingValue textEditingValue, _) {
-                        List<StreamStudents> list = box.values
-                            .map((e) => StreamStudents(
-                                e, controller.studentsProviderStore))
+                        List<StreamStudents> list = students!                        
+                            .map((e) => StreamStudents(e))
                             .toList();
                         if (isInited.hasData) {
                           list = controller.search(
