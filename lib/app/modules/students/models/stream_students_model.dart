@@ -7,28 +7,38 @@ import 'package:rx_notifier/rx_notifier.dart';
 
 import '../../../utils/constants.dart';
 import '../../../utils/faces/image_converter.dart';
+import '../../../utils/models/students_model.dart';
 import '../provider/students_provider_store.dart';
 import 'package:image/image.dart' as imglib;
-import 'students_models.dart';
 
 class StreamStudents extends Students {
   bool isAddPhotoName = false;
   String changedPhotoName = "";
-  final StudentsProviderStore assistidoStore;
+  final StudentsProviderStore studentsStore;
   final StreamController<StreamStudents> _chamadaController =
       StreamController<StreamStudents>.broadcast();
   static final countPresenteController = RxNotifier<int>(0);
-  StreamStudents(super.assistido, this.assistidoStore) : super.assistido();
-  StreamStudents.vazio(this.assistidoStore, {int key = -1})
+  StreamStudents(Students students, this.studentsStore)
       : super(
-            ident: key,
-            nomeM1: "Nome",
-            logradouro: "Rua",
-            endereco: "",
-            numero: "0");
+          id: students.id,
+          firstname: students.firstname,
+          lastname: students.lastname,
+          email: students.email,
+          photoName: students.photoName,
+          fotoPoints: students.fotoPoints,
+        );
+  StreamStudents.vazio(this.studentsStore, {int key = -1})
+      : super(
+          id: -1,
+          firstname: "",
+          lastname: "",
+          email: "",
+          photoName: "",
+          fotoPoints: const [],
+        );
   Stream<StreamStudents> get chamadaStream => _chamadaController.stream;
 
-  Students get assistido => this;
+  Students get students => this;
 
   static int get countPresente => countPresenteController.value;
   static set countPresente(int value) {
@@ -42,51 +52,51 @@ class StreamStudents extends Students {
   }
 
   Future<void> saveJustLocal() async =>
-      await assistidoStore.localStore.setRow(this);
+      await studentsStore.localStore.setRow(this);
   Future<void> saveJustRemote() async {
     if (isAddPhotoName == true) {
-      await assistidoStore.syncStore
+      await studentsStore.syncStore
           .addSync('setImage', [photoName, photoUint8List]);
       isAddPhotoName = false;
     }
     if (changedPhotoName.isNotEmpty) {
-      await assistidoStore.syncStore.addSync('delImage', changedPhotoName);
+      await studentsStore.syncStore.addSync('delImage', changedPhotoName);
       changedPhotoName = "";
     }
-    await assistidoStore.syncStore.addSync('set', this);
+    await studentsStore.syncStore.addSync('set', this);
   }
 
   @override
   Future<void> delete() async {
     if (photoName.isNotEmpty) {
-      assistidoStore.syncStore.addSync('delImage', photoName);
+      studentsStore.syncStore.addSync('delImage', photoName);
     }
     delPhoto();
-    assistidoStore.delete(this);
+    studentsStore.delete(this);
   }
 
   Future<void> delPhoto() async {
-    await assistidoStore.localStore.delFile(photoName);
+    await studentsStore.localStore.delFile(photoName);
   }
 
   Future<Uint8List> get photoUint8List async {
     Uint8List uint8ListImage = Uint8List(0);
     if (photoName.isNotEmpty) {
-      final file = await assistidoStore.localStore.getFile(photoName);
+      final file = await studentsStore.localStore.getFile(photoName);
       if (await file.exists()) {
         uint8ListImage = await file.readAsBytes();
       } else {
-        var stringRemoteImage = await assistidoStore.remoteStore
-            .getFile('BDados_Images', photoName);
+        var stringRemoteImage =
+            await studentsStore.remoteStore.getFile('BDados_Images', photoName);
         if ((stringRemoteImage != null) && (stringRemoteImage.isNotEmpty)) {
           uint8ListImage = base64Decode(stringRemoteImage);
-          assistidoStore.localStore.addSetFile(photoName, uint8ListImage);
+          studentsStore.localStore.addSetFile(photoName, uint8ListImage);
         }
       }
       if (uint8ListImage.isNotEmpty) {
         final image = imglib.decodeJpg(uint8ListImage);
         if (image != null) {
-          fotoPoints = (await assistidoStore.faceDetectionService
+          fotoPoints = (await studentsStore.faceDetectionService
               .classificatorImage(image));
         }
       }
@@ -101,25 +111,24 @@ class StreamStudents extends Students {
       final now = DateTime.now();
       final DateFormat formatter = DateFormat('yyyy-MM-dd_H-m-s');
       if (photoName.isNotEmpty) {
-        assistidoStore.localStore.delFile(photoName);
+        studentsStore.localStore.delFile(photoName);
       }
       photoName =
-          '${nomeM1.replaceAll(RegExp(r"\s+"), "").toLowerCase().replaceAllMapped(RegExp(r'[\W\[\] ]'), (Match a) => caracterMap.containsKey(a[0]) ? caracterMap[a[0]]! : a[0]!)}_${formatter.format(now)}.jpg';
+          '${(firstname+lastname).replaceAll(RegExp(r"\s+"), "").toLowerCase().replaceAllMapped(RegExp(r'[\W\[\] ]'), (Match a) => caracterMap.containsKey(a[0]) ? caracterMap[a[0]]! : a[0]!)}_${formatter.format(now)}.jpg';
       //Criando o arquivo - Armazenamento Local
       final file =
-          await assistidoStore.localStore.addSetFile("aux", uint8ListImage);
+          await studentsStore.localStore.addSetFile("aux", uint8ListImage);
       final inputImage = InputImage.fromFile(file);
-      final faceDetected = await assistidoStore
-          .faceDetectionService.faceDetector
+      final faceDetected = await studentsStore.faceDetectionService.faceDetector
           .processImage(inputImage);
       if (faceDetected.isNotEmpty) {
         final image = imglib.decodeJpg(uint8ListImage);
         if (image != null) {
-          fotoPoints = (await assistidoStore.faceDetectionService
+          fotoPoints = (await studentsStore.faceDetectionService
               .classificatorImage(image));
           uint8ListImageAux = imglib
               .encodeJpg(cropFace(image, faceDetected[0], step: 80) ?? image);
-          await assistidoStore.localStore
+          await studentsStore.localStore
               .addSetFile(photoName, uint8ListImageAux);
         }
       }

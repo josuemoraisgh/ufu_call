@@ -4,8 +4,7 @@ import 'package:flutter_modular/flutter_modular.dart';
 import '../../app_module.dart';
 import 'pages/students_edit_insert_page.dart';
 import 'pages/students_face_detector_page.dart';
-import 'provider/students_provider_store.dart';
-import 'provider/remote_storage_service.dart';
+import 'provider/chamada_gsheet_provider.dart';
 import 'services/students_storage_service.dart';
 import 'services/sync_storage_service.dart';
 import 'students_page.dart';
@@ -28,7 +27,7 @@ class StudentsModule extends Module {
           syncStore: SyncStorageService(),
           localStore: StudentsStorageService(),
           configStore: ConfigStorageService(),
-          remoteStore: StudentsRemoteStorageService(provider: Dio()),
+          remoteStore: ChamadaGsheetProvider(provider: Dio()),
           faceDetectionService: FaceDetectionService(
             faceDetector: FaceDetector(
               options: FaceDetectorOptions(

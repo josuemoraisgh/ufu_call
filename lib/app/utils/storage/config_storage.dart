@@ -5,7 +5,7 @@ import '../constants.dart';
 import '../models/token_model.dart';
 import '../models/user_model.dart';
 
-class MoodleLocalStorage {
+class ConfigStorage {
   Completer<Box<List<String>>> configCompleter = Completer<Box<List<String>>>();
 
   Future<void> init() async {

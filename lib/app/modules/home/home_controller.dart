@@ -1,16 +1,16 @@
 import 'package:flutter_modular/flutter_modular.dart';
 
 import '../../utils/provider/moodle_provider.dart';
-import '../../utils/service/moodle_local_storage.dart';
+import '../../utils/storage/config_storage.dart';
 
 class HomeController {
-  late final MoodleLocalStorage moodleLocalStorage;
+  late final ConfigStorage moodleLocalStorage;
   late final MoodleProvider moodleProvider;
   HomeController(
-      {MoodleLocalStorage? moodleLocalStorage,
+      {ConfigStorage? moodleLocalStorage,
       MoodleProvider? moodleProvider}) {
     this.moodleLocalStorage =
-        moodleLocalStorage ?? Modular.get<MoodleLocalStorage>();
+        moodleLocalStorage ?? Modular.get<ConfigStorage>();
     this.moodleProvider = moodleProvider ?? Modular.get<MoodleProvider>();
   }
 }

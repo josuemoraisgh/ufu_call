@@ -6,29 +6,30 @@ part of 'students_model.dart';
 // TypeAdapterGenerator
 // **************************************************************************
 
-class UserAdapter extends TypeAdapter<User> {
+class UserAdapter extends TypeAdapter<Students> {
   @override
   final int typeId = 2;
 
   @override
-  User read(BinaryReader reader) {
+  Students read(BinaryReader reader) {
     final numOfFields = reader.readByte();
     final fields = <int, dynamic>{
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
-    return User(
+    return Students(
       id: fields[0] as int,
       firstname: fields[1] as String,
       lastname: fields[2] as String,
       email: fields[3] as String,
-      profileimageurl: fields[4] as String,
+      photoName: fields[4] as String,
+      fotoPoints: (fields[5] as List).cast<double>(),
     );
   }
 
   @override
-  void write(BinaryWriter writer, User obj) {
+  void write(BinaryWriter writer, Students obj) {
     writer
-      ..writeByte(5)
+      ..writeByte(6)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -38,7 +39,9 @@ class UserAdapter extends TypeAdapter<User> {
       ..writeByte(3)
       ..write(obj.email)
       ..writeByte(4)
-      ..write(obj.profileimageurl);
+      ..write(obj.photoName)
+      ..writeByte(5)
+      ..write(obj.fotoPoints);
   }
 
   @override

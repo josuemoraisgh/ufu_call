@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_modular/flutter_modular.dart';
-import 'package:ufu_call/app/utils/service/moodle_local_storage.dart';
+import 'package:ufu_call/app/utils/storage/config_storage.dart';
 import 'modules/students/students_module.dart';
 import 'modules/config/config_module.dart';
 import 'modules/info/info_module.dart';
@@ -16,7 +16,7 @@ class AppModule extends Module {
   void exportedBinds(Injector i) {
     //i.addInstance<CameraService>(CameraService());
     i.addInstance<Dio>(Dio());
-    i.addInstance<MoodleLocalStorage>(MoodleLocalStorage());
+    i.addInstance<ConfigStorage>(ConfigStorage());
     i.addInstance<MoodleProvider>(MoodleProvider(providerHttp: i.get<Dio>()));
   }
 
