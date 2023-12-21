@@ -8,13 +8,13 @@ import 'modules/login/login_module.dart';
 import 'modules/home/home_module.dart';
 import 'notfound_page.dart';
 import 'splash_page.dart';
-//import 'utils/faces/camera_controle_service.dart';
+import 'utils/faces/camera_controle_service.dart';
 import 'utils/provider/moodle_provider.dart';
 
 class AppModule extends Module {
   @override
   void exportedBinds(Injector i) {
-    //i.addInstance<CameraService>(CameraService());
+    i.addInstance<CameraService>(CameraService());
     i.addInstance<Dio>(Dio());
     i.addInstance<ConfigStorage>(ConfigStorage());
     i.addInstance<MoodleProvider>(MoodleProvider(providerHttp: i.get<Dio>()));

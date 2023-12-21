@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:hive/hive.dart';
-import '../students_controller.dart';
+import 'package:rx_notifier/rx_notifier.dart';
 
 class DropdownBody extends StatefulWidget {
-  final StudentsController controller;
-  const DropdownBody({super.key, required this.controller});
+  final RxNotifier<String> dateSelected;
+  final List<String> dateList;
+  const DropdownBody(
+      {super.key, required this.dateList, required this.dateSelected});
 
   @override
   State<DropdownBody> createState() => _DropdownBodyState();
@@ -18,82 +19,58 @@ class _DropdownBodyState extends State<DropdownBody> {
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<List<String>?>(
-      future: widget.controller.studentsProviderStore.getConfig('dateSelected'),
-      builder: (BuildContext context, AsyncSnapshot<List<String>?> dateSel) =>
-          FutureBuilder<List<String>?>(
-        future: widget.controller.studentsProviderStore.getConfig('itensList'),
-        builder: (BuildContext context,
-                AsyncSnapshot<List<String>?> itensLis) =>
-            itensLis.hasData && dateSel.hasData
-                ? StreamBuilder(
-                    initialData: BoxEvent("", dateSel.data, false),
-                    stream: widget.controller.studentsProviderStore.configStore
-                        .watch("dateSelected")
-                        .asBroadcastStream() as Stream<BoxEvent>,
-                    builder: (BuildContext context,
-                            AsyncSnapshot<BoxEvent> dateSelected) =>
-                        StreamBuilder(
-                      initialData: BoxEvent("", itensLis.data, false),
-                      stream: widget
-                          .controller.studentsProviderStore.configStore
-                          .watch("itensList")
-                          .asBroadcastStream() as Stream<BoxEvent>,
-                      builder: (BuildContext context,
-                              AsyncSnapshot<BoxEvent> itensList) =>
-                          SizedBox(
-                        height: 25,
-                        child: DropdownButton<String>(
-                          value: dateSelected.data!.value[0],
-                          onChanged: (String? novoItemSelecionado) {
-                            if (novoItemSelecionado != null) {
-                              widget.controller.studentsProviderStore.setConfig(
-                                  "dateSelected", [novoItemSelecionado]);
-                            }
-                          },
-                          style: const TextStyle(
-                            color: Colors.black,
-                          ),
-                          underline: Container(),
-                          iconEnabledColor: Colors.white,
-                          dropdownColor:
-                              Theme.of(context).colorScheme.background,
-                          focusColor: Theme.of(context).colorScheme.background,
-                          selectedItemBuilder: (BuildContext context) {
-                            return (itensList.data!.value as List<String>)
-                                .map((String value) {
-                                  return Text(
-                                    value,
-                                    style: const TextStyle(
-                                      fontSize: 18,
-                                      color: Colors.white,
-                                    ),
-                                  );
-                                })
-                                .toList()
-                                .cast<Widget>();
-                          },
-                          items: itensList.data!.value
-                              .map((String dropDownStringItem) {
-                                return DropdownMenuItem<String>(
-                                  value: dropDownStringItem,
-                                  child: Text(
-                                    dropDownStringItem,
-                                    style: const TextStyle(
-                                      fontSize: 18,
-                                      color: Colors.black,
-                                    ),
-                                  ),
-                                );
-                              })
-                              .toList()
-                              .cast<DropdownMenuItem<String>>(),
-                        ),
-                      ),
+    return ValueListenableBuilder<String>(
+      valueListenable: widget.dateSelected,
+      builder: (BuildContext context, String dateSelected, _) =>
+          dateSelected != ""
+              ? SizedBox(
+                  height: 25,
+                  child: DropdownButton<String>(
+                    value: dateSelected,
+                    onChanged: (String? novoItemSelecionado) {
+                      if (novoItemSelecionado != null) {
+                        widget.dateSelected.value = novoItemSelecionado;
+                      }
+                    },
+                    style: const TextStyle(
+                      color: Colors.black,
                     ),
-                  )
-                : const Center(child: CircularProgressIndicator()),
-      ),
+                    underline: Container(),
+                    iconEnabledColor: Colors.white,
+                    dropdownColor: Theme.of(context).colorScheme.background,
+                    focusColor: Theme.of(context).colorScheme.background,
+                    selectedItemBuilder: (BuildContext context) {
+                      return widget.dateList
+                          .map((String value) {
+                            return Text(
+                              value,
+                              style: const TextStyle(
+                                fontSize: 18,
+                                color: Colors.white,
+                              ),
+                            );
+                          })
+                          .toList()
+                          .cast<Widget>();
+                    },
+                    items: widget.dateList
+                        .map((String dropDownStringItem) {
+                          return DropdownMenuItem<String>(
+                            value: dropDownStringItem,
+                            child: Text(
+                              dropDownStringItem,
+                              style: const TextStyle(
+                                fontSize: 18,
+                                color: Colors.black,
+                              ),
+                            ),
+                          );
+                        })
+                        .toList()
+                        .cast<DropdownMenuItem<String>>(),
+                  ),
+                )
+              : const Center(child: CircularProgressIndicator()),
     );
   }
 }

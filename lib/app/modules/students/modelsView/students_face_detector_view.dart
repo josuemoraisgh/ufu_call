@@ -16,14 +16,12 @@ import 'package:image/image.dart' as imglib;
 class StudentsFaceDetectorView extends StatefulWidget {
   final RxNotifier<List<StreamStudents>>? studentsProvavel;
   final RxNotifier<bool>? isPhotoChanged;
-  final StreamStudents? students;
   final List<StreamStudents>? studentsList;
   final StackFit? stackFit;
   const StudentsFaceDetectorView(
       {super.key,
       this.studentsList,
       this.studentsProvavel,
-      this.students,
       this.stackFit,
       this.isPhotoChanged});
 
@@ -34,10 +32,9 @@ class StudentsFaceDetectorView extends StatefulWidget {
 
 class _StudentsFaceDetectorViewState extends State<StudentsFaceDetectorView> {
   late Future<bool> isInited;
-  late final StudentsProviderStore studentsProviderStore;
   late final FaceDetectionService faceDetectionService;
-  bool _canProcess = true, _isBusy = false, _isFace = false;
 
+  bool _canProcess = true, _isBusy = false, _isFace = false;
   CameraService? _cameraService = Modular.get<CameraService>();
   CameraImage? cameraImage;
   List<Face>? faces;
@@ -45,17 +42,15 @@ class _StudentsFaceDetectorViewState extends State<StudentsFaceDetectorView> {
   CustomPaint? _customPaint;
 
   Future<bool> init() async {
-    studentsProviderStore =
-        Modular.get<StudentsController>().studentsProviderStore;
-    faceDetectionService = studentsProviderStore.faceDetectionService;
+    faceDetectionService = Modular.get<StudentsController>().faceDetectionService;
     _cameraService = _cameraService ?? CameraService();
     return true;
   }
 
   @override
   void initState() {
+    isInited = init();    
     super.initState();
-    isInited = init();
   }
 
   @override
@@ -93,14 +88,6 @@ class _StudentsFaceDetectorViewState extends State<StudentsFaceDetectorView> {
             widget.studentsList!,
             widget.studentsProvavel!);
       }
-    } else {
-      if ((widget.students != null) && (uint8ListImage != null)) {
-        widget.students?.addSetPhoto(uint8ListImage);
-        if (widget.isPhotoChanged != null) {
-          widget.isPhotoChanged!.value = true;
-        }
-      }
-      Modular.to.pop();
     }
   }
 

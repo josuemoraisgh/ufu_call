@@ -1,12 +1,9 @@
 import 'package:badges/badges.dart' as bg;
-import 'package:brasil_fields/brasil_fields.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:rx_notifier/rx_notifier.dart';
 import '../../utils/models/students_model.dart';
-import '../../utils/models/token_model.dart';
 import 'modelsView/students_listview_silver.dart';
 import 'students_controller.dart';
 import 'models/stream_students_model.dart';
@@ -16,8 +13,7 @@ import 'modelsView/dropdown_body.dart';
 
 class StudentsPage extends StatefulWidget {
   final String courseId;
-  final Token token;
-  const StudentsPage({super.key, required this.courseId, required this.token});
+  const StudentsPage({super.key, required this.courseId});
 
   @override
   State<StudentsPage> createState() => _StudentsPageState();
@@ -25,59 +21,39 @@ class StudentsPage extends StatefulWidget {
 
 class _StudentsPageState extends State<StudentsPage> {
   final StudentsController controller = Modular.get<StudentsController>();
-  final DropdownBody assistidosDropdownButton =
-      DropdownBody(controller: Modular.get<StudentsController>());
-  List<Students>? students;
 
   @override
   void initState() {
     super.initState();
   }
 
-  Future<bool> init() async {
-    await controller.init();
-    students = (await controller.moodleProvider
-        .getUsersByCourseId(widget.courseId, widget.token)).object as List<Students>;
-    return true;
-  }
-
   @override
-  Widget build(BuildContext context) => FutureBuilder(
-        future: init(),
-        builder: (BuildContext context, AsyncSnapshot<bool> isInited) =>
-            isInited.data == true
-                ? ValueListenableBuilder(
-                      valueListenable: controller.textEditing,
-                      builder: (BuildContext context,
-                          TextEditingValue textEditingValue, _) {
-                        List<StreamStudents> list = students!                        
-                            .map((e) => StreamStudents(e))
-                            .toList();
-                        if (isInited.hasData) {
-                          list = controller.search(
-                            list,
-                            textEditingValue.text,
-                            'ATIVO',
-                          );
-                        }
-                        return Scaffold(
-                          appBar: customAppBar(isInited.hasData),
-                          body: customBody(context, list),
-                          floatingActionButton:
-                              customFloatingActionButton(context, list),
-                        );
-                      },
-                    ),
-                  )
-                : Scaffold(
-                    appBar: customAppBar(isInited.hasData),
-                    body: customBody(context, []),
+  Widget build(BuildContext context) =>
+      FutureBuilder<(List<Students>, List<String>)>(
+          future: controller.init(widget.courseId),
+          builder: (BuildContext context,
+                  AsyncSnapshot<(List<Students>, List<String>)> isInited) =>
+              ValueListenableBuilder(
+                valueListenable: controller.textEditing,
+                builder: (BuildContext context,
+                    TextEditingValue textEditingValue, _) {
+                  List<StreamStudents>? list;
+                  if (isInited.hasData) {
+                    list = isInited.data!.$1
+                        .map((e) => StreamStudents(e))
+                        .toList();
+                    list = controller.search(list, textEditingValue.text);
+                  }
+                  return Scaffold(
+                    appBar: customAppBar(isInited.data?.$2 ?? []),
+                    body: customBody(context, list ?? []),
                     floatingActionButton:
-                        customFloatingActionButton(context, []),
-                  ),
-      );
+                        customFloatingActionButton(context, list ?? []),
+                  );
+                },
+              ));
 
-  AppBar customAppBar(bool isInited) => AppBar(
+  AppBar customAppBar(List<String> dateList) => AppBar(
         title: RxBuilder(
           builder: (BuildContext context) => bg.Badge(
             badgeStyle: bg.BadgeStyle(
@@ -92,7 +68,7 @@ class _StudentsPageState extends State<StudentsPage> {
             child: RxBuilder(
               builder: (BuildContext context) =>
                   controller.whatWidget.value == 0
-                      ? isInited
+                      ? dateList.isNotEmpty
                           ? Row(
                               children: [
                                 const Text(
@@ -102,7 +78,10 @@ class _StudentsPageState extends State<StudentsPage> {
                                       color: Colors.white,
                                       decorationColor: Colors.black),
                                 ),
-                                assistidosDropdownButton,
+                                DropdownBody(
+                                  dateList: dateList,
+                                  dateSelected: controller.dateSelected,
+                                ),
                               ],
                             )
                           : const Text("Inicializando")
@@ -127,9 +106,7 @@ class _StudentsPageState extends State<StudentsPage> {
               ),
               child: IconButton(
                 icon: const Icon(Icons.sync),
-                onPressed: () async {
-                  controller.sync();
-                },
+                onPressed: () async {},
               ),
             ),
           ),
@@ -188,7 +165,7 @@ class _StudentsPageState extends State<StudentsPage> {
             label: 'Reset Comunication',
             labelStyle: const TextStyle(fontSize: 18.0),
             onTap: () async {
-              await controller.studentsProviderStore.remoteStore.resetAll();
+              //await controller.studentsProviderStore.remoteStore.resetAll();
             },
           ),
           SpeedDialChild(
@@ -210,7 +187,7 @@ class _StudentsPageState extends State<StudentsPage> {
               labelStyle: const TextStyle(fontSize: 18.0),
               onTap: () {
                 controller.whatWidget.value = 0;
-                _checkDate(context);
+                //_checkDate(context);
               }),
           SpeedDialChild(
             child: const Icon(Icons.assignment_returned),
@@ -235,7 +212,7 @@ class _StudentsPageState extends State<StudentsPage> {
           ),
         ],
       );
-
+/*
   Future _checkDate(BuildContext context) async {
     showDialog(
         context: context,
@@ -249,10 +226,6 @@ class _StudentsPageState extends State<StudentsPage> {
             actions: [
               ElevatedButton(
                   onPressed: () async {
-                    final dateSelected = (await controller.studentsProviderStore
-                        .getConfig("dateSelected"))?[0];
-                    final itensList = await controller.studentsProviderStore
-                        .getConfig("itensList");
                     if (itensList != null &&
                         dateSelected != null &&
                         itensList.length > 1) {
@@ -345,5 +318,5 @@ class _StudentsPageState extends State<StudentsPage> {
                 }),
           );
         });
-  }
+  }*/
 }

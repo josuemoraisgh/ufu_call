@@ -1,9 +1,6 @@
 import 'dart:async';
-import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
-import 'package:hive/hive.dart';
-import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:rx_notifier/rx_notifier.dart';
 import '../../utils/constants.dart';
 import '../../utils/models/students_model.dart';
@@ -15,6 +12,7 @@ import 'services/face_detection_service.dart';
 
 class StudentsController {
   final textEditing = TextEditingController(text: "");
+  final dateSelected = RxNotifier<String>("");
   final isInitedController = RxNotifier<bool>(false);
   final focusNode = FocusNode();
   final whatWidget = RxNotifier<int>(0);
@@ -35,24 +33,33 @@ class StudentsController {
       FaceDetectionService? faceDetectionService}) {
     this.chamadaGsheetProvider =
         chamadaGsheetProvider ?? Modular.get<ChamadaGsheetProvider>();
-    this.configStorage =
-        configStorage ?? Modular.get<ConfigStorage>();
+    this.configStorage = configStorage ?? Modular.get<ConfigStorage>();
     this.moodleProvider = moodleProvider ?? Modular.get<MoodleProvider>();
-this.faceDetectionService =
-        faceDetectionService ?? Modular.get<FaceDetectionService>();    
+    this.faceDetectionService =
+        faceDetectionService ?? Modular.get<FaceDetectionService>();
   }
 
-  Future<void> init() async {
-    if (isInitedController.value == false) {
-      configStorage.init();
-      isInitedController.value = true;
-    }
+  Future<(List<Students>, List<String>)> init(String courseId) async {
+    return (await getStudents(courseId), await geDateList());
+  }
+
+  Future<List<Students>> getStudents(String courseId) async {
+    final token = await configStorage.getUserToken();
+    return (await moodleProvider.getUsersByCourseId(courseId, token)).object
+        as List<Students>;
+  }
+
+  Future<List<String>> geDateList() async {
+    final list = await chamadaGsheetProvider.getItem(
+        table: "ININDI", userName: "Nome", date: "");
+    dateSelected.value = list.last;
+    return list;
   }
 
   List<StreamStudents> search(
-      List<StreamStudents> studentsList, termosDeBusca, String condicao) {
+      List<StreamStudents> studentsList, termosDeBusca) {
     return studentsList
-        .where((students) => (students.firstname+students.lastname)
+        .where((students) => (students.firstname + students.lastname)
             .toLowerCase()
             .replaceAllMapped(
                 RegExp(r'[\W\[\] ]'),

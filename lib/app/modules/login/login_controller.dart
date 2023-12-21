@@ -7,8 +7,7 @@ class LoginController {
   late final ConfigStorage moodleLocalStorage;
   late final MoodleProvider moodleProvider;
   LoginController(
-      {ConfigStorage? moodleLocalStorage,
-      MoodleProvider? moodleProvider}) {
+      {ConfigStorage? moodleLocalStorage, MoodleProvider? moodleProvider}) {
     this.moodleLocalStorage =
         moodleLocalStorage ?? Modular.get<ConfigStorage>();
     this.moodleProvider = moodleProvider ?? Modular.get<MoodleProvider>();

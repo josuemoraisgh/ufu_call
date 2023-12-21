@@ -3,7 +3,6 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
-import 'package:hive_flutter/hive_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../utils/constants.dart';
 import '../students_controller.dart';
@@ -23,84 +22,67 @@ class StudentsListViewSilver extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder(
-      future: controller.studentsProviderStore.configStore
-          .getConfig("dateSelected"),
-      builder: (BuildContext context, AsyncSnapshot<List<String>?> value) =>
-          value.hasData
-              ? StreamBuilder<BoxEvent>(
-                  initialData: BoxEvent("", value.data, false),
-                  stream: controller.studentsProviderStore.configStore
-                      .watch("dateSelected")
-                      .asBroadcastStream() as Stream<BoxEvent>,
-                  builder: (BuildContext context,
-                      AsyncSnapshot<BoxEvent> dateSelected) {
-                    final data = dateSelected.data?.value[0];
-                    if (data != null && data != "") {
-                      int count = 0;
-                      for (var element in list) {
-                        if (element.chamada.toLowerCase().contains(data)) {
-                          count++;
-                        }
-                      }
-                      StreamStudents.countPresente = count;
-                    }
-                    return Column(
-                      mainAxisSize: MainAxisSize.max,
-                      children: [
-                        if (faceDetectorView != null)
-                          SizedBox(
-                              height: 300,
-                              width: MediaQuery.of(context).size.width,
-                              child: faceDetectorView!),
-                        Expanded(
-                          child: CustomScrollView(
-                            semanticChildCount: list.length,
-                            slivers: <Widget>[
-                              SliverSafeArea(
-                                top: false,
-                                minimum: const EdgeInsets.only(top: 8),
-                                sliver: SliverList(
-                                  delegate: SliverChildBuilderDelegate(
-                                    (context, index) {
-                                      if (index < list.length) {
-                                        return Column(
-                                          children: <Widget>[
-                                            row(list[index], data),
-                                            index == list.length - 1
-                                                ? const Padding(
-                                                    padding: EdgeInsets.only(
-                                                        bottom: 50))
-                                                : Padding(
-                                                    padding:
-                                                        const EdgeInsets.only(
-                                                      left: 100,
-                                                      right: 16,
-                                                    ),
-                                                    child: Container(
-                                                      height: 1,
-                                                      color: Styles
-                                                          .linhaProdutoDivisor,
-                                                    ),
-                                                  ),
-                                          ],
-                                        );
-                                      }
-                                      return null;
-                                    },
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    );
-                  },
-                )
-              : const Center(
-                  child: CircularProgressIndicator(),
-                ),
+    return ValueListenableBuilder<String>(
+      valueListenable: controller.dateSelected,
+      builder: (BuildContext context, String dateSelected, _) {
+        /*
+            int count = 0;
+            for (var element in list) {
+              if (element.chamada.toLowerCase().contains(data)) {
+                count++;
+              }
+            }
+            StreamStudents.countPresente = count;
+        */
+        return Column(
+          mainAxisSize: MainAxisSize.max,
+          children: [
+            if (faceDetectorView != null)
+              SizedBox(
+                  height: 300,
+                  width: MediaQuery.of(context).size.width,
+                  child: faceDetectorView!),
+            Expanded(
+              child: CustomScrollView(
+                semanticChildCount: list.length,
+                slivers: <Widget>[
+                  SliverSafeArea(
+                    top: false,
+                    minimum: const EdgeInsets.only(top: 8),
+                    sliver: SliverList(
+                      delegate: SliverChildBuilderDelegate(
+                        (context, index) {
+                          if (index < list.length) {
+                            return Column(
+                              children: <Widget>[
+                                row(list[index], dateSelected),
+                                index == list.length - 1
+                                    ? const Padding(
+                                        padding: EdgeInsets.only(bottom: 50))
+                                    : Padding(
+                                        padding: const EdgeInsets.only(
+                                          left: 100,
+                                          right: 16,
+                                        ),
+                                        child: Container(
+                                          height: 1,
+                                          color: Styles.linhaProdutoDivisor,
+                                        ),
+                                      ),
+                              ],
+                            );
+                          }
+                          return null;
+                        },
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -150,15 +132,15 @@ class StudentsListViewSilver extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
                   Text(
-                    pessoa.nomeM1,
+                    '${pessoa.firstname} ${pessoa.lastname}',
                     style: Styles.linhaProdutoNomeDoItem,
                   ),
                   const Padding(padding: EdgeInsets.only(top: 8)),
-                  if (pessoa.fone.isNotEmpty)
+                  if (pessoa.email.isEmpty)
                     Row(
                       children: [
                         Text(
-                          pessoa.fone,
+                          pessoa.email,
                           style: Styles.linhaProdutoPrecoDoItem,
                         ),
                         const SizedBox(
@@ -170,7 +152,7 @@ class StudentsListViewSilver extends StatelessWidget {
                             color: Colors.green,
                           ),
                           onPressed: () async {
-                            await abrirWhatsApp(pessoa.fone);
+                            //await abrirWhatsApp(pessoa.email);
                           },
                         ),
                       ],
@@ -197,9 +179,7 @@ class StudentsListViewSilver extends StatelessWidget {
                       padding: EdgeInsets.zero,
                       onPressed: () =>
                           assistido.data!.chamadaToogleFunc(dateSelected),
-                      child: assistido.data!.chamada
-                              .toLowerCase()
-                              .contains(dateSelected)
+                      child: assistido.data?.chamada[dateSelected] == "P"
                           ? const Icon(
                               CupertinoIcons.hand_thumbsup,
                               color: Colors.green,

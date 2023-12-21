@@ -7,8 +7,6 @@ import 'package:image/image.dart' as imglib;
 import '../students_controller.dart';
 
 class StreamStudents extends Students {
-  bool isAddPhotoName = false;
-  String changedPhotoName = "";
   Uint8List? _uint8ListImage;
   final StreamController<StreamStudents> _chamadaController =
       StreamController<StreamStudents>.broadcast();
@@ -37,7 +35,6 @@ class StreamStudents extends Students {
   Students get students => this;
 
   static int get countPresente => countPresenteController.value;
-
   static set countPresente(int value) {
     Future.delayed(const Duration(seconds: 0),
         () => countPresenteController.value = value);
@@ -63,23 +60,35 @@ class StreamStudents extends Students {
   }
 
   bool insertChamadaFunc(dateSelected) {
-    if (!(chamada.toLowerCase().contains(dateSelected))) {
-      chamada = '$chamada$dateSelected,';
+    if (chamada.containsKey(dateSelected)) {
+      if (chamada[dateSelected] != "P") {
+        chamada[dateSelected] = "P";
+        Future.delayed(
+            const Duration(seconds: 0), () => countPresenteController.value++);
+      }
+    } else {
+      chamada.addAll({dateSelected: "P"});
       Future.delayed(
-          const Duration(seconds: 0), () => countPresenteController.value--);
-      return true;
+          const Duration(seconds: 0), () => countPresenteController.value++);
     }
-    return false;
+    return true;
   }
 
   int chamadaToogleFunc(dateSelected) {
-    if (chamada.toLowerCase().contains(dateSelected)) {
-      chamada = chamada.replaceAll("$dateSelected,", "");
-      Future.delayed(
-          const Duration(seconds: 0), () => countPresenteController.value--);
-      return -1;
+    if (chamada.containsKey(dateSelected)) {
+      if (chamada[dateSelected] != "P") {
+        chamada[dateSelected] = "P";
+        Future.delayed(
+            const Duration(seconds: 0), () => countPresenteController.value++);
+        return 1;
+      } else {
+        chamada[dateSelected] = "";
+        Future.delayed(
+            const Duration(seconds: 0), () => countPresenteController.value--);
+        return -1;
+      }
     } else {
-      chamada = "$chamada$dateSelected,";
+      chamada.addAll({dateSelected: "P"});
       Future.delayed(
           const Duration(seconds: 0), () => countPresenteController.value++);
       return 1;
@@ -87,7 +96,7 @@ class StreamStudents extends Students {
   }
 
   @override
-  set chamada(String value) {
+  set chamada(Map<String, String> value) {
     super.chamada = value;
     _chamadaController.sink.add(this);
   }

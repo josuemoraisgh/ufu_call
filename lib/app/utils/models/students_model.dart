@@ -3,18 +3,22 @@ part 'students_model.g.dart';
 
 @HiveType(typeId: 2, adapterName: 'UserAdapter')
 class Students extends HiveObject {
-  @HiveField(0)  
+  @HiveField(0)
   int id;
   @HiveField(1)
   String firstname;
   @HiveField(2)
   String lastname;
   @HiveField(3)
-  String email;  
+  String email;
   @HiveField(4)
   String photoName;
   @HiveField(5)
+  Map<String, String> chamada;
+  @HiveField(6)
   List<double> fotoPoints;
+  @HiveField(7)
+  List<int> photoIntList;
 
   Students(
       {required this.id,
@@ -22,7 +26,9 @@ class Students extends HiveObject {
       required this.lastname,
       required this.email,
       required this.photoName,
-      required this.fotoPoints});
+      this.chamada = const {},
+      this.fotoPoints = const [],
+      this.photoIntList = const []});
 
   Students.empty()
       : id = -1,
@@ -30,7 +36,9 @@ class Students extends HiveObject {
         lastname = "",
         email = "",
         photoName = "",
-        fotoPoints = const [];
+        chamada = const {},
+        fotoPoints = const [],
+        photoIntList = const [];
 
   Students.fromJson(Map<String, dynamic> json)
       : id = json['id'] as int,
@@ -38,7 +46,9 @@ class Students extends HiveObject {
         lastname = json['lastname'] as String,
         email = json['email'] as String,
         photoName = json['profileimageurl'] as String,
-        fotoPoints = const [];
+        chamada = const {},
+        fotoPoints = const [],
+        photoIntList = const [];
 
   Map<String, dynamic> toJson() => {
         'id': id,
@@ -46,5 +56,6 @@ class Students extends HiveObject {
         'lastname': lastname,
         'email': email,
         'profileimageurl': photoName,
+        'chamada': chamada,
       };
 }

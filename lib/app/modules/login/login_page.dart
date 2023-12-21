@@ -23,23 +23,12 @@ class _LoginPageState extends State<LoginPage> {
   var usernameController = TextEditingController(text: "");
   var passwordController = TextEditingController(text: "");
 
-  Future<bool> init() async {
-    await controller.moodleLocalStorage.init();
-    return true;
-  }
-
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder(
-        initialData: false,
-        future: init(),
-        builder: (context, isInit) => Scaffold(
-              key: globalKey,
-              backgroundColor: Colors.white,
-              body: isInit.data == true
-                  ? _loginContainer(context)
-                  : const Center(child: CircularProgressIndicator()),
-            ));
+    return Scaffold(
+        key: globalKey,
+        backgroundColor: Colors.white,
+        body: _loginContainer(context));
   }
 
   Widget _loginContainer(BuildContext context) {

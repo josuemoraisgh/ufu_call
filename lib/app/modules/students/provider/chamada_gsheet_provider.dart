@@ -12,7 +12,7 @@ class ChamadaGsheetProvider {
     this.provider = provider ?? Modular.get<Dio>();
   }
 
-  Future<String> sendGet(
+  Future<dynamic> sendGet(
       {required String table,
       required String func,
       required String userName,
@@ -63,10 +63,10 @@ class ChamadaGsheetProvider {
       userName: userName,
       date: date,
       value: value,
-    );
+    ) as String;
   }
 
-  Future<String> getItem(
+  Future<List<String>> getItem(
       {required String table,
       required String userName,
       required String date}) async {
@@ -75,6 +75,6 @@ class ChamadaGsheetProvider {
       func: 'putItem',
       userName: userName,
       date: date,
-    );
+    ) as List<String>;
   }
 }

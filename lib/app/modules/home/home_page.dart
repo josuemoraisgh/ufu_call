@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import '../../utils/constants.dart';
@@ -20,10 +19,7 @@ class HomePage extends StatefulWidget {
 class HomePageState extends State<HomePage> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final HomeController controller = Modular.get<HomeController>();
-  User? user;
-  Token? token;
-  List<Course>? courses;
-
+/*
   @override
   Future<void> didChangeDependencies() async {
     if (user == null) {
@@ -31,20 +27,7 @@ class HomePageState extends State<HomePage> {
     }
     super.didChangeDependencies();
   }
-
-  Future<bool> initUserProfile() async {
-    final userLocal = await controller.moodleLocalStorage.getUserProfile();
-    final tokenLocal = await controller.moodleLocalStorage.getUserToken();
-    final coursesLocal =
-        (await controller.moodleProvider.getUserCourses(tokenLocal, userLocal))
-            .object as List<Course>;
-    user = userLocal;
-    token = tokenLocal;
-    courses = coursesLocal;
-
-    return true;
-  }
-
+*/
   @override
   void initState() {
     super.initState();
@@ -58,21 +41,25 @@ class HomePageState extends State<HomePage> {
           _scaffoldKey.currentState?.openDrawer();
         });
 
-    return FutureBuilder(
-      future: initUserProfile(),
-      builder: (BuildContext context, AsyncSnapshot value) => Scaffold(
-          key: _scaffoldKey,
-          appBar: getAppBarWithBackBtn(
-              ctx: context,
-              title: Texts.APP_NAME,
-              //bgColor: ColorConst.WHITE_BG_COLOR,
-              icon: homeIcon),
-          drawer: value.hasData ? NavDrawer(user: user!, token: token!) : null,
-          body: value.hasData
-              ? _createUi()
-              : const Center(
-                  child: CircularProgressIndicator(),
-                )),
+    return FutureBuilder<(User, Token, List<Course>)>(
+      future: controller.initUserProfile(),
+      builder: (BuildContext context,
+              AsyncSnapshot<(User, Token, List<Course>)> value) =>
+          Scaffold(
+              key: _scaffoldKey,
+              appBar: getAppBarWithBackBtn(
+                  ctx: context,
+                  title: Texts.APP_NAME,
+                  //bgColor: ColorConst.WHITE_BG_COLOR,
+                  icon: homeIcon),
+              drawer: value.hasData
+                  ? NavDrawer(user: value.data!.$1, token: value.data!.$2)
+                  : null,
+              body: value.hasData
+                  ? _createUi(value.data!.$2, value.data!.$3)
+                  : const Center(
+                      child: CircularProgressIndicator(),
+                    )),
     );
   }
 
@@ -91,7 +78,7 @@ class HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _createUi() {
+  Widget _createUi(Token token, List<Course> courses) {
     return SafeArea(
       child: SingleChildScrollView(
         child: Column(
@@ -99,8 +86,9 @@ class HomePageState extends State<HomePage> {
           children: <Widget>[
             ListView.builder(
               shrinkWrap: true,
-              itemCount: courses!.length,
-              itemBuilder: gridListView,
+              itemCount: courses.length,
+              itemBuilder: (BuildContext context, int index) =>
+                  gridListView(context, index, token, courses),
             ),
           ],
         ),
@@ -108,16 +96,14 @@ class HomePageState extends State<HomePage> {
     );
   }
 
-  Widget gridListView(BuildContext context, int index) {
+  Widget gridListView(
+      BuildContext context, int index, Token token, List<Course> courses) {
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 4),
       child: InkWell(
         onTap: () => Modular.to.pushNamed(
           "/students/",
-          arguments: {
-            "courseId": courses![index].id.toString(),
-            'token': token,
-          },
+          arguments: {"courseId": courses[index].id.toString()},
         ),
         child: Card(
           color: Colors.white,
@@ -125,7 +111,7 @@ class HomePageState extends State<HomePage> {
           child: Row(
             children: <Widget>[
               Hero(
-                tag: courses![index].id,
+                tag: courses[index].id,
                 child: Container(
                   height: 120,
                   width: 100,
@@ -136,7 +122,7 @@ class HomePageState extends State<HomePage> {
                     image: DecorationImage(
                       fit: BoxFit.cover,
                       image: NetworkImage(
-                        '${courses![index].fileurl.replaceFirst(".php", ".php?file=")}&forcedownload=1&token=${token!.token}',
+                        '${courses[index].fileurl.replaceFirst(".php", ".php?file=")}&forcedownload=1&token=${token.token}',
                       ),
                     ),
                   ),
@@ -149,7 +135,7 @@ class HomePageState extends State<HomePage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
                     Text(
-                      courses![index].fullname,
+                      courses[index].fullname,
                       style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
@@ -159,7 +145,7 @@ class HomePageState extends State<HomePage> {
                     SizedBox(
                       width: 240,
                       child: Text(
-                        courses![index].shortname,
+                        courses[index].shortname,
                         style: const TextStyle(color: Colors.black),
                       ),
                     ),

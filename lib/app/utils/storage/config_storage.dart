@@ -11,7 +11,11 @@ import '../models/user_model.dart';
 class ConfigStorage {
   Completer<Box<List<String>>> configCompleter = Completer<Box<List<String>>>();
 
-  Future<void> init() async {
+  ConfigStorage() {
+    _init();
+  }
+
+  Future<void> _init() async {
     if (!configCompleter.isCompleted) {
       configCompleter.complete(await Hive.openBox<List<String>>('MoodleDatas'));
     }
@@ -47,7 +51,8 @@ class ConfigStorage {
 
   Future<Token> getUserToken() async {
     final box = await configCompleter.future;
-    return Token.fromJson(json.decode(box.get(ConfigureKeys.USER_TOKEN)?[0] ?? ""));
+    return Token.fromJson(
+        json.decode(box.get(ConfigureKeys.USER_TOKEN)?[0] ?? ""));
   }
 
   Future<void> setUserToken(Token token) async {
@@ -104,5 +109,5 @@ class ConfigStorage {
       return true;
     }
     return false;
-  }  
+  }
 }

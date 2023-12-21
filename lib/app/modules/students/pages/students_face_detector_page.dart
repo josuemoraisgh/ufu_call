@@ -23,7 +23,6 @@ class StudentsFaceDetectorPage extends StatelessWidget {
     return Scaffold(
         appBar: AppBar(title: Text(title)),
         body: StudentsFaceDetectorView(
-          students: students,
           studentsList: studentsList,
           studentsProvavel: studentsProvavel,
           stackFit: StackFit.expand,
