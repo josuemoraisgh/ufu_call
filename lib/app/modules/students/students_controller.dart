@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:rx_notifier/rx_notifier.dart';
 import '../../utils/constants.dart';
+import '../../utils/models/course.dart';
 import '../../utils/models/students_model.dart';
 import '../../utils/provider/moodle_provider.dart';
 import '../../utils/storage/config_storage.dart';
@@ -39,19 +40,20 @@ class StudentsController {
         faceDetectionService ?? Modular.get<FaceDetectionService>();
   }
 
-  Future<(List<Students>, List<String>)> init(String courseId) async {
-    return (await getStudents(courseId), await geDateList());
+  Future<(List<Students>, List<String>)> init(Course course) async {
+    return (await getStudents(course), await geDateList(course));
   }
 
-  Future<List<Students>> getStudents(String courseId) async {
+  Future<List<Students>> getStudents(Course course) async {
     final token = await configStorage.getUserToken();
-    return (await moodleProvider.getUsersByCourseId(courseId, token)).object
+    return (await moodleProvider.getUsersByCourseId(course.id.toString(), token)).object
         as List<Students>;
   }
 
-  Future<List<String>> geDateList() async {
+  Future<List<String>> geDateList(Course course) async {
     final list = await chamadaGsheetProvider.getItem(
-        table: "ININDI", userName: "Nome", date: "");
+      //course.idnumber
+        table: course.shortname, userName: "Nome", date: "");
     dateSelected.value = list.last;
     return list;
   }

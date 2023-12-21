@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:rx_notifier/rx_notifier.dart';
+import '../../utils/models/course.dart';
 import '../../utils/models/students_model.dart';
 import 'modelsView/students_listview_silver.dart';
 import 'students_controller.dart';
@@ -12,8 +13,8 @@ import 'modelsView/custom_search_bar.dart';
 import 'modelsView/dropdown_body.dart';
 
 class StudentsPage extends StatefulWidget {
-  final String courseId;
-  const StudentsPage({super.key, required this.courseId});
+  final Course course;
+  const StudentsPage({super.key, required this.course});
 
   @override
   State<StudentsPage> createState() => _StudentsPageState();
@@ -30,7 +31,7 @@ class _StudentsPageState extends State<StudentsPage> {
   @override
   Widget build(BuildContext context) =>
       FutureBuilder<(List<Students>, List<String>)>(
-          future: controller.init(widget.courseId),
+          future: controller.init(widget.course),
           builder: (BuildContext context,
                   AsyncSnapshot<(List<Students>, List<String>)> isInited) =>
               ValueListenableBuilder(

@@ -45,7 +45,7 @@ class Students extends HiveObject {
         firstname = json['firstname'] as String,
         lastname = json['lastname'] as String,
         email = json['email'] as String,
-        photoName = json['profileimageurl'] as String,
+        photoName = '${(json['profileimageurl'] as String).replaceFirst(".php", ".php?file=")}&forcedownload=1&token=',
         chamada = const {},
         fotoPoints = const [],
         photoIntList = const [];

@@ -43,13 +43,12 @@ class ChamadaGsheetProvider {
         }
       } else {
         debugPrint("ChamadaGsheetProvider - sendGet - $response");
-        return "";
       }
     } catch (e) {
       debugPrint("ChamadaGsheetProvider - sendGet - $response");
     }
     //_countConnection--;
-    return "";
+    return null;
   }
 
   Future<String> putItem(
@@ -57,24 +56,26 @@ class ChamadaGsheetProvider {
       required String userName,
       required String date,
       required String value}) async {
-    return sendGet(
+    final resp = await sendGet(
       table: table,
-      func: 'putItem',
+      func: 'put',
       userName: userName,
       date: date,
       value: value,
-    ) as String;
+    );
+    return resp.toString();
   }
 
   Future<List<String>> getItem(
       {required String table,
       required String userName,
       required String date}) async {
-    return sendGet(
+    final List resp = await sendGet(
       table: table,
-      func: 'putItem',
+      func: 'get',
       userName: userName,
       date: date,
-    ) as List<String>;
+    );
+    return resp.map((e) => e.toString()).toList();
   }
 }

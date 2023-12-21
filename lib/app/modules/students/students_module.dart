@@ -38,7 +38,7 @@ class StudentsModule extends Module {
     r.child(
       '/',
       child: (_) => StudentsPage(
-        courseId: r.args.data["courseId"],
+        course: r.args.data["course"],
       ),
       transition: TransitionType.custom,
       customTransition: CustomTransition(

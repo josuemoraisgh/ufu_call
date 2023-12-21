@@ -4,6 +4,7 @@ import 'package:flutter_modular/flutter_modular.dart';
 import 'package:rx_notifier/rx_notifier.dart';
 import '../../../utils/models/students_model.dart';
 import 'package:image/image.dart' as imglib;
+import '../../../utils/models/token_model.dart';
 import '../students_controller.dart';
 
 class StreamStudents extends Students {
@@ -41,11 +42,12 @@ class StreamStudents extends Students {
   }
 
   Future<Uint8List> get photoUint8List async {
+    Token token  = await controller.configStorage.getUserToken();
     if (_uint8ListImage != null) return _uint8ListImage!;
     _uint8ListImage = Uint8List(0);
     if (photoName.isNotEmpty) {
       _uint8ListImage =
-          (await NetworkAssetBundle(Uri.parse(photoName)).load(photoName))
+          (await NetworkAssetBundle(Uri.parse('$photoName${token.token}')).load(photoName))
               .buffer
               .asUint8List();
       if (_uint8ListImage!.isNotEmpty) {

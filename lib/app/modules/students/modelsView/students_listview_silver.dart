@@ -2,7 +2,6 @@ import 'dart:typed_data';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_modular/flutter_modular.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../utils/constants.dart';
 import '../students_controller.dart';
@@ -194,19 +193,6 @@ class StudentsListViewSilver extends StatelessWidget {
                     );
                   },
                 ),
-          CupertinoButton(
-            padding: EdgeInsets.zero,
-            onPressed: () => Modular.to.pushNamed(
-              "insert",
-              arguments: {"students": pessoa},
-            ),
-            child: const Icon(
-              Icons.edit,
-              size: 30.0,
-              color: Colors.blue,
-              semanticLabel: 'Edit',
-            ),
-          ),
         ],
       ),
     );

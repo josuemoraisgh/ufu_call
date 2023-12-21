@@ -103,7 +103,7 @@ class HomePageState extends State<HomePage> {
       child: InkWell(
         onTap: () => Modular.to.pushNamed(
           "/students/",
-          arguments: {"courseId": courses[index].id.toString()},
+          arguments: {"course": courses[index]},
         ),
         child: Card(
           color: Colors.white,
