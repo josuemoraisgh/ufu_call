@@ -1,8 +1,8 @@
 import 'dart:async';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:rx_notifier/rx_notifier.dart';
+import '../../../utils/constants.dart';
 import '../../../utils/models/students_model.dart';
 import 'package:image/image.dart' as imglib;
 import '../../../utils/models/token_model.dart';
@@ -46,13 +46,14 @@ class StreamStudents extends Students {
     Token token  = await controller.configStorage.getUserToken();
     //if (_uint8ListImage != null) return _uint8ListImage!;
     //_uint8ListImage = Uint8List(0);
-    if ((photoName.isNotEmpty)&&(photoName.contains("rev="))) {
+    if ((photoName.isNotEmpty)&&(photoName.contains("?rev="))) {
+      final url = '${photoName.replaceFirst(APIConstants.API_BASE_URL,"${APIConstants.API_BASE_URL}webservice/")}&token=${token.token}';
       _uint8ListImage =
-          (await NetworkAssetBundle(Uri.parse('$photoName${token.token}')).load(''))
+          (await NetworkAssetBundle(Uri.parse(url)).load(url))
               .buffer
               .asUint8List();
       if (_uint8ListImage!.isNotEmpty) {
-        final image = imglib.decodePng(_uint8ListImage!);
+        final image = imglib.decodeImage(_uint8ListImage!);
         if (image != null) {
           fotoPoints =
               (await controller.faceDetectionService.classificatorImage(image));

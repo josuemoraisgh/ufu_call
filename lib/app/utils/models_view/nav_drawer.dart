@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
+import '../constants.dart';
 import '../models/token_model.dart';
 import '../models/user_model.dart';
 
@@ -18,10 +19,6 @@ class NavDrawer extends StatelessWidget {
   }
 
   _buildDrawer(BuildContext context) {
-    //final ByteData imageData = await NetworkAssetBundle(Uri.parse('https://picsum.photos/250?image=9')).load("");
-    //final Uint8List bytes = imageData.buffer.asUint8List();
-    var imagem = NetworkImage(
-        '${user.userpictureurl.replaceFirst("?", "&").replaceFirst(".php", ".php?file=")}&forcedownload=1&token=${token.token}');
     return ClipPath(
       child: Drawer(
         child: Container(
@@ -54,7 +51,8 @@ class NavDrawer extends StatelessWidget {
                               colors: [Colors.green, Colors.blue])),
                       child: CircleAvatar(
                         radius: 60,
-                        backgroundImage: imagem,
+                        backgroundImage: NetworkImage(
+                            '${user.userpictureurl.replaceFirst(APIConstants.API_BASE_URL,"${APIConstants.API_BASE_URL}webservice/")}&token=${token.token}'),
                       ),
                     ),
                   ),

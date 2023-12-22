@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'dart:math';
 
@@ -53,18 +54,23 @@ class FaceDetectionService extends Disposable {
   static const nomedoInterpreter =
       'assets/mobilefacenet2.tflite'; //'assets/mobilefacenet3.tflite'
 
+  var faceCompleter = Completer<bool>();
+
   FaceDetectionService({FaceDetector? faceDetector}) {
     this.faceDetector = faceDetector ?? Modular.get<FaceDetector>();
+    init();
   }
 
   Future<void> init() async {
-    await initializeInterpreter();
+    if (!faceCompleter.isCompleted) {
+      faceCompleter.complete(await initializeInterpreter());
+    }
     //interpreter.allocateTensors();
     //orientation = SensorOrientationDetector();
     //await orientation.init();
   }
 
-  Future initializeInterpreter() async {
+  Future<bool> initializeInterpreter() async {
     Delegate? delegate;
     try {
       if (Platform.isAndroid) {
@@ -87,6 +93,9 @@ class FaceDetectionService extends Disposable {
               waitType:
                   tFLGpuDelegateWaitType['TFLGpuDelegateWaitTypeActive']!),
         );
+      } else if (Platform.isWindows) {
+    
+        
       }
       InterpreterOptions interpreterOptions = InterpreterOptions()
         ..addDelegate(delegate!);
@@ -98,6 +107,7 @@ class FaceDetectionService extends Disposable {
       debugPrint('Filed to load model.');
       debugPrint(e.toString());
     }
+    return true;
   }
 
   Future<void> predict(
@@ -105,6 +115,7 @@ class FaceDetectionService extends Disposable {
       int rotation,
       List<StreamStudents> assistidos,
       RxNotifier<List<StreamStudents>> assistidoProvavel) async {
+    await faceCompleter.future;
     List<StreamStudents> assistidosIdentList = [];
     List<List> inputs = [];
     double min = 2.0;
@@ -153,6 +164,7 @@ class FaceDetectionService extends Disposable {
   }
 
   Future<List<double>> classificatorImage(imglib.Image image) async {
+    await faceCompleter.future;
     List<List<double>> output =
         List.generate(1, (index) => List.filled(pontosdoModelo, 0));
     List input = [_preProcessImage(image)];
