@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'dart:convert';
+import 'dart:typed_data';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
@@ -77,5 +79,23 @@ class ChamadaGsheetProvider {
       date: date,
     );
     return resp.map((e) => e.toString()).toList();
+  }
+
+  Future<Uint8List?> getFile(String url) async {
+    var response = await provider.get(
+      url,
+      options: Options(
+        responseType: ResponseType.bytes,
+        followRedirects: false,
+        validateStatus: (status) {
+          return status! < 500;
+        },
+      ),
+    );
+    if (response.statusCode == 200) {
+      final uil = response.data;
+      return uil;
+    }
+    return null;
   }
 }
