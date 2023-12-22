@@ -119,12 +119,14 @@ class HomePageState extends State<HomePage> {
                     borderRadius: const BorderRadius.only(
                         bottomLeft: Radius.circular(5),
                         topLeft: Radius.circular(5)),
-                    image: DecorationImage(
-                      fit: BoxFit.cover,
-                      image: NetworkImage(
-                        '${courses[index].fileurl.replaceFirst(".php", ".php?file=")}&forcedownload=1&token=${token.token}',
-                      ),
-                    ),
+                    image: courses[index].fileurl.isNotEmpty
+                        ? DecorationImage(
+                            fit: BoxFit.cover,
+                            image: NetworkImage(
+                              '${courses[index].fileurl.replaceFirst(".php", ".php?file=")}&forcedownload=1&token=${token.token}',
+                            ),
+                          )
+                        : null,
                   ),
                 ),
               ),
