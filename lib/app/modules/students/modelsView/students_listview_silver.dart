@@ -178,7 +178,7 @@ class StudentsListViewSilver extends StatelessWidget {
                       padding: EdgeInsets.zero,
                       onPressed: () =>
                           assistido.data!.chamadaToogleFunc(dateSelected),
-                      child: assistido.data?.chamada[dateSelected] == "P"
+                      child: assistido.data?.chamada![dateSelected] == "P"
                           ? const Icon(
                               CupertinoIcons.hand_thumbsup,
                               color: Colors.green,

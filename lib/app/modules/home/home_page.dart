@@ -3,8 +3,7 @@ import 'package:flutter_modular/flutter_modular.dart';
 import '../../utils/constants.dart';
 import '../../utils/models/course.dart';
 import '../../utils/models/token_model.dart';
-import '../../utils/models/user_model.dart';
-import '../../utils/models_view/nav_drawer.dart';
+import 'models_view/nav_drawer.dart';
 import 'home_controller.dart';
 
 class HomePage extends StatefulWidget {
@@ -41,10 +40,9 @@ class HomePageState extends State<HomePage> {
           _scaffoldKey.currentState?.openDrawer();
         });
 
-    return FutureBuilder<(User, Token, List<Course>)>(
+    return FutureBuilder<bool>(
       future: controller.initUserProfile(),
-      builder: (BuildContext context,
-              AsyncSnapshot<(User, Token, List<Course>)> value) =>
+      builder: (BuildContext context, AsyncSnapshot<bool> initUserProfile) =>
           Scaffold(
               key: _scaffoldKey,
               appBar: getAppBarWithBackBtn(
@@ -52,11 +50,9 @@ class HomePageState extends State<HomePage> {
                   title: Texts.APP_NAME,
                   //bgColor: ColorConst.WHITE_BG_COLOR,
                   icon: homeIcon),
-              drawer: value.hasData
-                  ? NavDrawer(user: value.data!.$1, token: value.data!.$2)
-                  : null,
-              body: value.hasData
-                  ? _createUi(value.data!.$2, value.data!.$3)
+              drawer: initUserProfile.hasData ? NavDrawer(controller) : null,
+              body: initUserProfile.hasData
+                  ? _createUi(controller.token!, controller.courses!)
                   : const Center(
                       child: CircularProgressIndicator(),
                     )),
@@ -136,12 +132,17 @@ class HomePageState extends State<HomePage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
-                    Text(
-                      courses[index].fullname,
-                      style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black),
+                    Expanded(
+                      child: Text(
+                        courses[index].fullname,
+                        softWrap: false,
+                        maxLines: 2,
+                        textAlign: TextAlign.left,
+                        style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black),
+                      ),
                     ),
                     const SizedBox(height: 10),
                     SizedBox(

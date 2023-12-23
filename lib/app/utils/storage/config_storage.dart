@@ -4,6 +4,7 @@ import 'dart:io';
 import 'dart:typed_data';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:ufu_call/app/utils/models/course.dart';
 import '../constants.dart';
 import '../models/token_model.dart';
 import '../models/user_model.dart';
@@ -81,6 +82,18 @@ class ConfigStorage {
     final box = await configCompleter.future;
     String siteUrlJson = json.encode(token);
     return box.put(ConfigureKeys.SITE_NAME, [siteUrlJson]);
+  }
+
+  Future<Course> getCourseSel() async {
+    final box = await configCompleter.future;
+    return Course.fromJson(
+        json.decode(box.get(ConfigureKeys.COURSE_SEL)?[0] ?? ""));
+  }
+
+  Future<void> setCourseSel(Course course) async {
+    final box = await configCompleter.future;
+    String courseSelJson = json.encode(course);
+    return box.put(ConfigureKeys.COURSE_SEL, [courseSelJson]);
   }
 
   Future<File> addSetFile(

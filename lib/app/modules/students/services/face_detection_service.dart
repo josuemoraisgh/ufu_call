@@ -93,10 +93,7 @@ class FaceDetectionService extends Disposable {
               waitType:
                   tFLGpuDelegateWaitType['TFLGpuDelegateWaitTypeActive']!),
         );
-      } else if (Platform.isWindows) {
-    
-        
-      }
+      } else if (Platform.isWindows) {}
       InterpreterOptions interpreterOptions = InterpreterOptions()
         ..addDelegate(delegate!);
 
@@ -140,8 +137,8 @@ class FaceDetectionService extends Disposable {
         interpreter.runForMultipleInputs(inputs, outputs);
         for (i = 0; i < assistidos.length; i++) {
           for (j = 0; j < outputs.length; j++) {
-            if (assistidos[i].fotoPoints.isNotEmpty) {
-              var vector1 = Vector.fromList(assistidos[i].fotoPoints);
+            if (assistidos[i].fotoPoints!.isNotEmpty) {
+              var vector1 = Vector.fromList(assistidos[i].fotoPoints!);
               final vectorOut = Vector.fromList(outputs[0]![j]);
               final n2 = vectorOut.norm();
               final aux = vector1.distanceTo(vectorOut / n2,

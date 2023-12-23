@@ -14,11 +14,11 @@ class Students extends HiveObject {
   @HiveField(4)
   String photoName;
   @HiveField(5)
-  Map<String, String> chamada;
+  Map<String, String>? chamada;
   @HiveField(6)
-  List<double> fotoPoints;
+  List<double>? fotoPoints;
   @HiveField(7)
-  List<int> photoIntList;
+  List<int>? photoIntList;
 
   Students(
       {required this.id,
@@ -26,9 +26,9 @@ class Students extends HiveObject {
       required this.lastname,
       required this.email,
       required this.photoName,
-      this.chamada = const {},
-      this.fotoPoints = const [],
-      this.photoIntList = const []});
+      this.chamada,
+      this.fotoPoints,
+      this.photoIntList});
 
   Students.empty()
       : id = -1,
@@ -36,9 +36,9 @@ class Students extends HiveObject {
         lastname = "",
         email = "",
         photoName = "",
-        chamada = const {},
-        fotoPoints = const [],
-        photoIntList = const [];
+        chamada = {},
+        fotoPoints = [],
+        photoIntList = [];
 
   Students.fromJson(Map<String, dynamic> json)
       : id = json['id'] as int,
@@ -46,9 +46,9 @@ class Students extends HiveObject {
         lastname = json['lastname'] as String,
         email = json['email'] as String,
         photoName = json['profileimageurl'] as String,
-        chamada = const {},
-        fotoPoints = const [],
-        photoIntList = const [];
+        chamada = {},
+        fotoPoints = [],
+        photoIntList = [];
 
   Map<String, dynamic> toJson() => {
         'id': id,

@@ -1,16 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
-import '../constants.dart';
-import '../models/token_model.dart';
-import '../models/user_model.dart';
+import '../../../utils/constants.dart';
+import '../home_controller.dart';
 
 class NavDrawer extends StatelessWidget {
-  final User user;
-  final Token token;
-  const NavDrawer({
+  final HomeController controller;
+  const NavDrawer(
+    this.controller, {
     super.key,
-    required this.user,
-    required this.token,
   });
 
   @override
@@ -52,13 +49,14 @@ class NavDrawer extends StatelessWidget {
                       child: CircleAvatar(
                         radius: 60,
                         backgroundImage: NetworkImage(
-                            '${user.userpictureurl.replaceFirst(APIConstants.API_BASE_URL,"${APIConstants.API_BASE_URL}webservice/")}&token=${token.token}'),
+                            '${controller.user!.userpictureurl.replaceFirst(APIConstants.API_BASE_URL, "${APIConstants.API_BASE_URL}webservice/")}&token=${controller.token!.token}'),
                       ),
                     ),
                   ),
                   const SizedBox(height: 5.0),
-                  Text('${user.firstname} ${user.lastname}'),
-                  Text("@${user.username}"),
+                  Text(
+                      '${controller.user!.firstname} ${controller.user!.lastname}'),
+                  Text("@${controller.user!.username}"),
                   const SizedBox(height: 30.0),
                   _buildRow(Icons.home, "Home"),
                   _buildDivider(),
@@ -139,22 +137,13 @@ class NavDrawer extends StatelessWidget {
     );
   }
 
-  void _navigateOnNextScreen(String title) {
+  Future<void> _navigateOnNextScreen(String title) async {
     switch (title) {
       case "Home":
-        // navigationPush(_context, CategoryMovie());
+        Modular.to.pop();
         break;
       case "Category":
         //navigationPush(_context, MovieListScreen(apiName: ApiConstant.GENRES_LIST));
-        break;
-      case "Tranding Movie":
-        //navigationPush(_context, MovieListScreen(apiName: ApiConstant.TRENDING_MOVIE_LIST));
-        break;
-      case "Popular Movie":
-        //navigationPush(_context, MovieListScreen(apiName: ApiConstant.POPULAR_MOVIES));
-        break;
-      case "Upcoming Movie":
-        //navigationPush(_context, MovieListScreen(apiName: ApiConstant.UPCOMING_MOVIE));
         break;
       case "Profile":
         //navigationStateLessPush(_context, ProfileScreen());
@@ -167,7 +156,8 @@ class NavDrawer extends StatelessWidget {
       case "About us":
         break;
       case "Exit":
-        //onWillPop(_context);
+        await controller.moodleLocalStorage.setUserLoggedIn(false);
+        Modular.to.pushNamed("/login/");
         break;
       default:
         Modular.to.pop();

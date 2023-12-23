@@ -12,4 +12,11 @@ class LoginController {
         moodleLocalStorage ?? Modular.get<ConfigStorage>();
     this.moodleProvider = moodleProvider ?? Modular.get<MoodleProvider>();
   }
+
+  Future<bool> init() async {
+    if (await moodleLocalStorage.isUserLoggedIn()) {
+      Modular.to.pushNamed("/home/");
+    }
+    return false;
+  }
 }

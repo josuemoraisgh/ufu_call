@@ -25,10 +25,16 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-        key: globalKey,
-        backgroundColor: Colors.white,
-        body: _loginContainer(context));
+    return FutureBuilder(
+      future: controller.init(),
+      builder: (context, isUserLoggedIn) => isUserLoggedIn.hasData
+          ? Scaffold(
+              key: globalKey,
+              backgroundColor: Colors.white,
+              body: _loginContainer(context),
+            )
+          : const Center(child: CircularProgressIndicator()),
+    );
   }
 
   Widget _loginContainer(BuildContext context) {
@@ -222,17 +228,10 @@ class _LoginPageState extends State<LoginPage> {
     switch (eventObject.id) {
       case EventConstants.LOGIN_USER_SUCCESSFUL:
         {
-          setState(() {
-            controller.moodleLocalStorage.setUserLoggedIn(true);
-            controller.moodleLocalStorage
-                .setUserProfile(eventObject.object as User);
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text(SnackBarText.LOGIN_SUCCESSFUL),
-              ),
-            );
-            Modular.to.pushNamed("/home/");
-          });
+          controller.moodleLocalStorage.setUserLoggedIn(true);
+          controller.moodleLocalStorage
+              .setUserProfile(eventObject.object as User);
+          Modular.to.pushNamed("/home/");
         }
         break;
       case EventConstants.LOGIN_USER_UN_SUCCESSFUL:

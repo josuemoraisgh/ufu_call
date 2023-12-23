@@ -162,21 +162,9 @@ class _StudentsPageState extends State<StudentsPage> {
         children: [
           SpeedDialChild(
             child: const Icon(Icons.collections),
-            backgroundColor: Colors.purple,
-            label: 'Reset Comunication',
-            labelStyle: const TextStyle(fontSize: 18.0),
-            onTap: () async {
-              //await controller.studentsProviderStore.remoteStore.resetAll();
-            },
-          ),
-          SpeedDialChild(
-            child: const Icon(Icons.collections),
             backgroundColor: Colors.red,
             label: 'Chamada por Image',
             labelStyle: const TextStyle(fontSize: 18.0),
-            /*onTap: () => chamadaTesteFunc(
-                assistidos:
-                    assistidoList), */
             onTap: () {
               controller.faceDetector.value = !controller.faceDetector.value;
             },
@@ -190,16 +178,6 @@ class _StudentsPageState extends State<StudentsPage> {
                 controller.whatWidget.value = 0;
                 //_checkDate(context);
               }),
-          SpeedDialChild(
-            child: const Icon(Icons.assignment_returned),
-            backgroundColor: Colors.green,
-            label: 'Inserir Usuário',
-            labelStyle: const TextStyle(fontSize: 18.0),
-            onTap: () => Modular.to.pushNamed(
-              "insert",
-              arguments: {"students": null},
-            ),
-          ),
           SpeedDialChild(
             child: const Icon(
               Icons.search,

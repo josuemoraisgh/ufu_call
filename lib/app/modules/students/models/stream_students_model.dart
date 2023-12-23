@@ -1,13 +1,13 @@
 import 'dart:async';
 import 'package:flutter/services.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:rx_notifier/rx_notifier.dart';
 import '../../../utils/constants.dart';
+
 import '../../../utils/models/students_model.dart';
-import 'package:image/image.dart' as imglib;
 import '../../../utils/models/token_model.dart';
 import '../students_controller.dart';
+import 'package:image/image.dart' as imglib;
 
 class StreamStudents extends Students {
   Uint8List? _uint8ListImage;
@@ -22,7 +22,9 @@ class StreamStudents extends Students {
           lastname: students.lastname,
           email: students.email,
           photoName: students.photoName,
-          fotoPoints: students.fotoPoints,
+          chamada: students.chamada ?? {},
+          fotoPoints: students.fotoPoints ?? [],
+          photoIntList: students.photoIntList ?? [],
         );
   StreamStudents.vazio({int key = -1})
       : super(
@@ -31,7 +33,9 @@ class StreamStudents extends Students {
           lastname: "",
           email: "",
           photoName: "",
-          fotoPoints: const [],
+          chamada: {},
+          fotoPoints: [],
+          photoIntList: [],
         );
   Stream<StreamStudents> get chamadaStream => _chamadaController.stream;
 
@@ -44,7 +48,7 @@ class StreamStudents extends Students {
   }
 
   Future<Uint8List> get photoUint8List async {
-    //if (_uint8ListImage != null) return _uint8ListImage!;
+    if (_uint8ListImage != null) return _uint8ListImage!;
     Token token = await controller.configStorage.getUserToken();
     if ((photoName.isNotEmpty) && (photoName.contains("?rev="))) {
       final url =
@@ -52,56 +56,69 @@ class StreamStudents extends Students {
       _uint8ListImage = (await NetworkAssetBundle(Uri.parse(url)).load(url))
           .buffer
           .asUint8List();
-      /*if (_uint8ListImage!.isNotEmpty) {
+      if (_uint8ListImage!.isNotEmpty) {
         final image = imglib.decodeImage(_uint8ListImage!);
         if (image != null) {
           fotoPoints =
               (await controller.faceDetectionService.classificatorImage(image));
         }
-      }*/
+      }
       return _uint8ListImage ?? Uint8List(0);
     }
     return Uint8List(0);
   }
 
   bool insertChamadaFunc(dateSelected) {
-    if (chamada.containsKey(dateSelected)) {
-      if (chamada[dateSelected] != "P") {
-        chamada[dateSelected] = "P";
-        Future.delayed(
-            const Duration(seconds: 0), () => countPresenteController.value++);
+    if ((chamada != null) && (chamada!.containsKey(dateSelected))) {
+      if (chamada![dateSelected] != "P") {
+        chamada![dateSelected] = "P";
       }
     } else {
-      chamada.addAll({dateSelected: "P"});
-      Future.delayed(
-          const Duration(seconds: 0), () => countPresenteController.value++);
+      if (chamada == null) {
+        chamada = {dateSelected: "P"};
+      } else {
+        chamada?.addAll({dateSelected: "P"});
+      }
     }
+    atualizaChamada(dateSelected, 1);
     return true;
   }
 
   int chamadaToogleFunc(dateSelected) {
-    if (chamada.containsKey(dateSelected)) {
-      if (chamada[dateSelected] != "P") {
-        chamada[dateSelected] = "P";
-        Future.delayed(
-            const Duration(seconds: 0), () => countPresenteController.value++);
+    if ((chamada != null) && (chamada!.containsKey(dateSelected))) {
+      if (chamada![dateSelected] != "P") {
+        chamada![dateSelected] = "P";
+        atualizaChamada(dateSelected, 1);
         return 1;
       } else {
-        chamada[dateSelected] = "";
-        Future.delayed(
-            const Duration(seconds: 0), () => countPresenteController.value--);
+        chamada![dateSelected] = "";
+        atualizaChamada(dateSelected, -1);
         return -1;
       }
     } else {
-      chamada.addAll({dateSelected: "P"});
-      Future.delayed(
-          const Duration(seconds: 0), () => countPresenteController.value++);
+      if (chamada == null) {
+        chamada = {dateSelected: "P"};
+      } else {
+        chamada?.addAll({dateSelected: "P"});
+      }
+      atualizaChamada(dateSelected, 1);
       return 1;
     }
   }
 
+  atualizaChamada(String dateSelected, int value) async {
+    _chamadaController.sink.add(this);
+    Future.delayed(const Duration(seconds: 0),
+        () => countPresenteController.value + value);
+    await controller.chamadaGsheetProvider.putItem(
+        table: 'ININDII',
+        userName: '$firstname $lastname',
+        date: dateSelected,
+        value: chamada![dateSelected]!);
+  }
+
   @override
-  set chamada(Map<String, String> value) {
+  set chamada(Map<String, String>? value) {
     super.chamada = value;
     _chamadaController.sink.add(this);
   }

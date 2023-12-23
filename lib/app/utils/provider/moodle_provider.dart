@@ -28,7 +28,8 @@ class MoodleProvider {
         queryParameters: {'username': username, 'password': password},
       );
 
-      if (response.statusCode == APIResponseCode.SC_OK) {
+      if ((response.statusCode == APIResponseCode.SC_OK) &&
+          !(response.data as Map).containsKey('error')) {
         Token result = Token.fromJson(response.data);
         return EventObject(
             id: EventConstants.LOGIN_USER_SUCCESSFUL, object: result);
@@ -46,7 +47,9 @@ class MoodleProvider {
 
     try {
       final response = await providerHttp.get(currentUrl);
-      if (response.statusCode == APIResponseCode.SC_OK) {
+      if ((response.statusCode == APIResponseCode.SC_OK) &&
+          !((response.data is Map) &&
+              (response.data as Map).containsKey('error'))) {
         User user = User.fromJson(response.data);
         return EventObject(
             id: EventConstants.LOGIN_USER_SUCCESSFUL, object: user);
@@ -64,7 +67,9 @@ class MoodleProvider {
 
     try {
       final response = await providerHttp.get(currentUrl);
-      if (response.statusCode == APIResponseCode.SC_OK) {
+      if ((response.statusCode == APIResponseCode.SC_OK) &&
+          !((response.data is Map) &&
+              (response.data as Map).containsKey('error'))) {
         List<Course> courses = <Course>[];
         for (var e in (response.data as List)) {
           courses.add(
@@ -81,14 +86,15 @@ class MoodleProvider {
     }
   }
 
-  Future<EventObject> getUsersByCourseId(
-      String courseId, Token token) async {
+  Future<EventObject> getUsersByCourseId(String courseId, Token token) async {
     String currentUrl =
         '${APIConstants.API_BASE_URL}${APIOperations.getUsersByCourseId}&courseid=$courseId&wstoken=${token.token}';
 
     try {
       final response = await providerHttp.get(currentUrl);
-      if (response.statusCode == APIResponseCode.SC_OK) {
+      if ((response.statusCode == APIResponseCode.SC_OK) &&
+          !((response.data is Map) &&
+              (response.data as Map).containsKey('error'))) {
         List<Students> students = <Students>[];
         for (var e in (response.data as List)) {
           students.add(
