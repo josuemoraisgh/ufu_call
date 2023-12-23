@@ -94,68 +94,78 @@ class HomePageState extends State<HomePage> {
 
   Widget gridListView(
       BuildContext context, int index, Token token, List<Course> courses) {
-    return Container(
-      margin: const EdgeInsets.symmetric(vertical: 4),
-      child: InkWell(
-        onTap: () => Modular.to.pushNamed(
-          "/students/",
-          arguments: {"course": courses[index]},
-        ),
-        child: Card(
-          color: Colors.white,
-          elevation: 5,
-          child: Row(
-            children: <Widget>[
-              Hero(
-                tag: courses[index].id,
-                child: Container(
-                  height: 120,
-                  width: 100,
-                  decoration: BoxDecoration(
-                    borderRadius: const BorderRadius.only(
-                        bottomLeft: Radius.circular(5),
-                        topLeft: Radius.circular(5)),
-                    image: courses[index].fileurl.isNotEmpty
-                        ? DecorationImage(
-                            fit: BoxFit.cover,
-                            image: NetworkImage(
-                              '${courses[index].fileurl.replaceFirst(".php", ".php?file=")}&forcedownload=1&token=${token.token}',
-                            ),
-                          )
-                        : null,
+    return LayoutBuilder(
+      builder: (BuildContext context, BoxConstraints constraints) => Container(
+        margin: const EdgeInsets.symmetric(vertical: 4),
+        child: InkWell(
+          onTap: () => Modular.to.pushNamed(
+            "/students/",
+            arguments: {"course": courses[index]},
+          ),
+          child: Card(
+            color: Colors.white,
+            elevation: 5,
+            child: Row(
+              children: <Widget>[
+                Hero(
+                  tag: courses[index].id,
+                  child: Container(
+                    height: 120,
+                    width: 100,
+                    decoration: BoxDecoration(
+                      borderRadius: const BorderRadius.only(
+                          bottomLeft: Radius.circular(5),
+                          topLeft: Radius.circular(5)),
+                      image: courses[index].fileurl.isNotEmpty
+                          ? DecorationImage(
+                              fit: BoxFit.cover,
+                              image: NetworkImage(
+                                '${courses[index].fileurl.replaceFirst(".php", ".php?file=")}&forcedownload=1&token=${token.token}',
+                              ),
+                            )
+                          : null,
+                    ),
                   ),
                 ),
-              ),
-              Container(
-                padding: const EdgeInsets.all(10),
-                height: 120,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    Expanded(
-                      child: Text(
-                        courses[index].fullname,
-                        softWrap: false,
-                        maxLines: 2,
-                        textAlign: TextAlign.left,
-                        style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black),
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  height: 120,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      SizedBox(
+                        width: constraints.maxWidth-150,
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                courses[index].fullname,
+                                softWrap: false,
+                                maxLines: 2,
+                                textAlign: TextAlign.left,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 10),
-                    SizedBox(
-                      width: 240,
-                      child: Text(
-                        courses[index].shortname,
-                        style: const TextStyle(color: Colors.black),
+                      const SizedBox(height: 10),
+                      SizedBox(
+                        width: 240,
+                        child: Text(
+                          courses[index].shortname,
+                          style: const TextStyle(color: Colors.black),
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
