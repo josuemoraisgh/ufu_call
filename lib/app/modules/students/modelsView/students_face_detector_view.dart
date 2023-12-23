@@ -15,15 +15,10 @@ import 'package:image/image.dart' as imglib;
 
 class StudentsFaceDetectorView extends StatefulWidget {
   final RxNotifier<List<StreamStudents>>? studentsProvavel;
-  final RxNotifier<bool>? isPhotoChanged;
   final List<StreamStudents>? studentsList;
   final StackFit? stackFit;
   const StudentsFaceDetectorView(
-      {super.key,
-      this.studentsList,
-      this.studentsProvavel,
-      this.stackFit,
-      this.isPhotoChanged});
+      {super.key, this.studentsList, this.studentsProvavel, this.stackFit});
 
   @override
   State<StudentsFaceDetectorView> createState() =>
@@ -42,14 +37,15 @@ class _StudentsFaceDetectorViewState extends State<StudentsFaceDetectorView> {
   CustomPaint? _customPaint;
 
   Future<bool> init() async {
-    faceDetectionService = Modular.get<StudentsController>().faceDetectionService;
+    faceDetectionService =
+        Modular.get<StudentsController>().faceDetectionService;
     _cameraService = _cameraService ?? CameraService();
     return true;
   }
 
   @override
   void initState() {
-    isInited = init();    
+    isInited = init();
     super.initState();
   }
 

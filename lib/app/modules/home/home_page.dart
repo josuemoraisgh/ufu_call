@@ -129,19 +129,19 @@ class HomePageState extends State<HomePage> {
                 ),
                 Container(
                   padding: const EdgeInsets.all(10),
-                  height: 120,
+                  height: 150,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
                       SizedBox(
-                        width: constraints.maxWidth-150,
+                        width: constraints.maxWidth - 130,
                         child: Row(
                           children: [
                             Expanded(
                               child: Text(
                                 courses[index].fullname,
                                 softWrap: false,
-                                maxLines: 2,
+                                maxLines: 3,
                                 textAlign: TextAlign.left,
                                 overflow: TextOverflow.ellipsis,
                                 style: const TextStyle(

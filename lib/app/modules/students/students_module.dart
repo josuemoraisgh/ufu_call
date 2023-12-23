@@ -4,7 +4,6 @@ import 'package:flutter_modular/flutter_modular.dart';
 import '../../app_module.dart';
 import '../../utils/provider/moodle_provider.dart';
 import '../../utils/storage/config_storage.dart';
-import 'pages/students_face_detector_page.dart';
 import 'provider/chamada_gsheet_provider.dart';
 import 'students_page.dart';
 import 'services/face_detection_service.dart';
@@ -39,24 +38,6 @@ class StudentsModule extends Module {
       '/',
       child: (_) => StudentsPage(
         course: r.args.data["course"],
-      ),
-      transition: TransitionType.custom,
-      customTransition: CustomTransition(
-        transitionBuilder: (context, anim1, anim2, child) {
-          return FadeTransition(
-            opacity: anim1,
-            child: child,
-          );
-        },
-      ),
-    );
-    r.child(
-      '/faces',
-      child: (_) => StudentsFaceDetectorPage(
-        title: "Camera Ativa",
-        students: r.args.data["students"],
-        studentsList: r.args.data["studentsList"],
-        isPhotoChanged: r.args.data["isPhotoChanged"],
       ),
       transition: TransitionType.custom,
       customTransition: CustomTransition(

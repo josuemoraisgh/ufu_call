@@ -48,7 +48,7 @@ class FaceDetectionService extends Disposable {
   //late IsolateInterpreter isolateInterpreter;
   late final FaceDetector faceDetector;
   //late SensorOrientationDetector orientation;
-  static const double threshold = 1.0;
+  static const double threshold = 1.1;
 
   static const pontosdoModelo = 192; //512
   static const nomedoInterpreter =
