@@ -176,7 +176,7 @@ class _StudentsPageState extends State<StudentsPage> {
               labelStyle: const TextStyle(fontSize: 18.0),
               onTap: () {
                 controller.whatWidget.value = 0;
-                //_checkDate(context);
+                _checkDate(context);
               }),
           SpeedDialChild(
             child: const Icon(
@@ -191,7 +191,7 @@ class _StudentsPageState extends State<StudentsPage> {
           ),
         ],
       );
-/*
+
   Future _checkDate(BuildContext context) async {
     showDialog(
         context: context,
@@ -297,5 +297,5 @@ class _StudentsPageState extends State<StudentsPage> {
                 }),
           );
         });
-  }*/
+  }
 }
