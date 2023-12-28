@@ -256,12 +256,10 @@ class _StudentsPageState extends State<StudentsPage> {
                 child: const Text("Cancelar")),
             ElevatedButton(
                 onPressed: () async {
-                  () async {
-                    await controller.chamadaGsheetProvider
-                        .insertAt(widget.course.shortname, value);
-                    controller.dateList.value.add(value);
-                    controller.dateSelected.value = value;
-                  };
+                  controller.chamadaGsheetProvider
+                      .insertAt(widget.course.shortname, value);
+                  controller.dateList.value.add(value);
+                  controller.dateSelected.value = value;
                   Modular.to.pop();
                 },
                 child: const Text("Salvar")),

@@ -15,13 +15,14 @@ class StreamStudents extends Students {
       StreamController<StreamStudents>.broadcast();
   static final countPresenteController = RxNotifier<int>(0);
   final StudentsController controller = Modular.get<StudentsController>();
-  StreamStudents(Students students)
+  StreamStudents(Students students, {String? sortNameCourse})
       : super(
           id: students.id,
           firstname: students.firstname,
           lastname: students.lastname,
           email: students.email,
           photoName: students.photoName,
+          sortNameCourse: sortNameCourse ?? students.sortNameCourse,
           chamada: students.chamada ?? {},
           fotoPoints: students.fotoPoints ?? [],
         );
@@ -32,6 +33,7 @@ class StreamStudents extends Students {
           lastname: "",
           email: "",
           photoName: "",
+          sortNameCourse: "",
           chamada: {},
           fotoPoints: [],
         );
@@ -109,7 +111,7 @@ class StreamStudents extends Students {
     Future.delayed(const Duration(seconds: 0),
         () => countPresenteController.value + value);
     await controller.chamadaGsheetProvider.putItem(
-        table: 'ININDII',
+        table: sortNameCourse,
         userName: '$firstname $lastname',
         date: dateSelected,
         value: chamada![dateSelected]!);

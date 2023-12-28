@@ -44,8 +44,9 @@ class StudentsController {
   }
 
   Future<bool> initController(Course course) async {
-    studentsList.value =
-        (await getStudents(course)).map((e) => StreamStudents(e)).toList();
+    studentsList.value = (await getStudents(course))
+        .map((e) => StreamStudents(e, sortNameCourse: course.shortname))
+        .toList();
     dateList.value = await geDateList(course);
     dateSelected.addListener(() {
       getStudentChamadaValue(course);

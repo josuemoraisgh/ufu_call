@@ -4,6 +4,7 @@ class Students {
   String lastname;
   String email;
   String photoName;
+  String sortNameCourse;
   Map<String, String>? chamada;
   List<double>? fotoPoints;
 
@@ -13,6 +14,7 @@ class Students {
       required this.lastname,
       required this.email,
       required this.photoName,
+      required this.sortNameCourse,
       this.chamada,
       this.fotoPoints});
 
@@ -22,6 +24,7 @@ class Students {
         lastname = "",
         email = "",
         photoName = "",
+        sortNameCourse = "",
         chamada = {},
         fotoPoints = [];
 
@@ -31,6 +34,7 @@ class Students {
         lastname = json['lastname'] as String,
         email = json['email'] as String,
         photoName = json['profileimageurl'] as String,
+        sortNameCourse = "",
         chamada = {},
         fotoPoints = [];
 
