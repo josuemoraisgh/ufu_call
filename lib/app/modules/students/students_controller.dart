@@ -47,11 +47,10 @@ class StudentsController {
     studentsList.value =
         (await getStudents(course)).map((e) => StreamStudents(e)).toList();
     dateList.value = await geDateList(course);
-    dateSelected.value = dateList.value.last;
     dateSelected.addListener(() {
       getStudentChamadaValue(course);
     });
-    getStudentChamadaValue(course);
+    dateSelected.value = dateList.value.last;
     return true;
   }
 
@@ -59,9 +58,11 @@ class StudentsController {
     final values =
         await chamadaGsheetProvider.getValues(table: course.shortname);
     final index = values['Nome']!.indexOf(dateSelected.value);
-    for (var e in studentsList.value) {
-      if (values['${e.firstname} ${e.lastname}']?[index] == "P") {
-        e.insertChamadaFunc(dateSelected.value);
+    if (index >= 0) {
+      for (var e in studentsList.value) {
+        if (values['${e.firstname} ${e.lastname}']?[index] == "P") {
+          e.insertChamadaFunc(dateSelected.value);
+        }
       }
     }
   }

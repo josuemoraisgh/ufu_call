@@ -68,9 +68,9 @@ class _StudentsPageState extends State<StudentsPage> {
               builder: (BuildContext context) =>
                   controller.whatWidget.value == 0
                       ? controller.dateList.value.isNotEmpty
-                          ? Row(
+                          ? const Row(
                               children: [
-                                const Text(
+                                Text(
                                   "Chamada: ",
                                   style: TextStyle(
                                       fontSize: 16,
@@ -78,8 +78,7 @@ class _StudentsPageState extends State<StudentsPage> {
                                       decorationColor: Colors.black),
                                 ),
                                 DropdownBody(
-                                  dateList: controller.dateList.value,
-                                  dateSelected: controller.dateSelected,
+                                  selectedItemColor: Colors.white,
                                 ),
                               ],
                             )
@@ -213,13 +212,14 @@ class _StudentsPageState extends State<StudentsPage> {
                   }
                   controller.chamadaGsheetProvider
                       .removeAt(widget.course.idnumber, itensRemove);
+                  Modular.to.pop();
                 },
-                child: const Icon(Icons.remove, color: Colors.white, size: 24)),
+                child: const Icon(Icons.remove, size: 24)),
             ElevatedButton(
                 onPressed: () async {
                   await _insertData(context);
                 },
-                child: const Icon(Icons.add, color: Colors.white, size: 24)),
+                child: const Icon(Icons.add, size: 24)),
             ElevatedButton(
                 onPressed: () {
                   //Navigator.of(context, rootNavigator: true).pop();
@@ -227,9 +227,8 @@ class _StudentsPageState extends State<StudentsPage> {
                 },
                 child: const Text("Close")),
           ],
-          content: DropdownBody(
-            dateList: controller.dateList.value,
-            dateSelected: controller.dateSelected,
+          content: const DropdownBody(
+            selectedItemColor: Colors.black,
           ),
         );
       },
@@ -257,9 +256,13 @@ class _StudentsPageState extends State<StudentsPage> {
                 child: const Text("Cancelar")),
             ElevatedButton(
                 onPressed: () async {
-                  controller.dateSelected.value = value;
-                  controller.chamadaGsheetProvider
-                      .insertAt(widget.course.idnumber, value);
+                  () async {
+                    await controller.chamadaGsheetProvider
+                        .insertAt(widget.course.shortname, value);
+                    controller.dateList.value.add(value);
+                    controller.dateSelected.value = value;
+                  };
+                  Modular.to.pop();
                 },
                 child: const Text("Salvar")),
           ],

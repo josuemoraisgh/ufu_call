@@ -1,17 +1,22 @@
 import 'package:flutter/material.dart';
-import 'package:rx_notifier/rx_notifier.dart';
+import 'package:flutter_modular/flutter_modular.dart';
+
+import '../students_controller.dart';
 
 class DropdownBody extends StatefulWidget {
-  final RxNotifier<String> dateSelected;
-  final List<String> dateList;
-  const DropdownBody(
-      {super.key, required this.dateList, required this.dateSelected});
+  final Color? selectedItemColor;
+  const DropdownBody({
+    super.key,
+    this.selectedItemColor,
+  });
 
   @override
   State<DropdownBody> createState() => _DropdownBodyState();
 }
 
 class _DropdownBodyState extends State<DropdownBody> {
+  final StudentsController controller = Modular.get<StudentsController>();
+
   @override
   void initState() {
     super.initState();
@@ -20,7 +25,7 @@ class _DropdownBodyState extends State<DropdownBody> {
   @override
   Widget build(BuildContext context) {
     return ValueListenableBuilder<String>(
-      valueListenable: widget.dateSelected,
+      valueListenable: controller.dateSelected,
       builder: (BuildContext context, String dateSelected, _) =>
           dateSelected != ""
               ? SizedBox(
@@ -29,7 +34,7 @@ class _DropdownBodyState extends State<DropdownBody> {
                     value: dateSelected,
                     onChanged: (String? novoItemSelecionado) {
                       if (novoItemSelecionado != null) {
-                        widget.dateSelected.value = novoItemSelecionado;
+                        controller.dateSelected.value = novoItemSelecionado;
                       }
                     },
                     style: const TextStyle(
@@ -40,20 +45,20 @@ class _DropdownBodyState extends State<DropdownBody> {
                     dropdownColor: Theme.of(context).colorScheme.background,
                     focusColor: Theme.of(context).colorScheme.background,
                     selectedItemBuilder: (BuildContext context) {
-                      return widget.dateList
+                      return controller.dateList.value
                           .map((String value) {
                             return Text(
                               value,
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontSize: 18,
-                                color: Colors.white,
+                                color: widget.selectedItemColor,
                               ),
                             );
                           })
                           .toList()
                           .cast<Widget>();
                     },
-                    items: widget.dateList
+                    items: controller.dateList.value
                         .map((String dropDownStringItem) {
                           return DropdownMenuItem<String>(
                             value: dropDownStringItem,
