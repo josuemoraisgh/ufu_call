@@ -1,24 +1,11 @@
-import 'package:hive_flutter/hive_flutter.dart';
-part 'students_model.g.dart';
-
-@HiveType(typeId: 2, adapterName: 'UserAdapter')
-class Students extends HiveObject {
-  @HiveField(0)
+class Students {
   int id;
-  @HiveField(1)
   String firstname;
-  @HiveField(2)
   String lastname;
-  @HiveField(3)
   String email;
-  @HiveField(4)
   String photoName;
-  @HiveField(5)
   Map<String, String>? chamada;
-  @HiveField(6)
   List<double>? fotoPoints;
-  @HiveField(7)
-  List<int>? photoIntList;
 
   Students(
       {required this.id,
@@ -27,8 +14,7 @@ class Students extends HiveObject {
       required this.email,
       required this.photoName,
       this.chamada,
-      this.fotoPoints,
-      this.photoIntList});
+      this.fotoPoints});
 
   Students.empty()
       : id = -1,
@@ -37,8 +23,7 @@ class Students extends HiveObject {
         email = "",
         photoName = "",
         chamada = {},
-        fotoPoints = [],
-        photoIntList = [];
+        fotoPoints = [];
 
   Students.fromJson(Map<String, dynamic> json)
       : id = json['id'] as int,
@@ -47,8 +32,7 @@ class Students extends HiveObject {
         email = json['email'] as String,
         photoName = json['profileimageurl'] as String,
         chamada = {},
-        fotoPoints = [],
-        photoIntList = [];
+        fotoPoints = [];
 
   Map<String, dynamic> toJson() => {
         'id': id,

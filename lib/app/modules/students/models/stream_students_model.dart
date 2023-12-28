@@ -24,7 +24,6 @@ class StreamStudents extends Students {
           photoName: students.photoName,
           chamada: students.chamada ?? {},
           fotoPoints: students.fotoPoints ?? [],
-          photoIntList: students.photoIntList ?? [],
         );
   StreamStudents.vazio({int key = -1})
       : super(
@@ -35,7 +34,6 @@ class StreamStudents extends Students {
           photoName: "",
           chamada: {},
           fotoPoints: [],
-          photoIntList: [],
         );
   Stream<StreamStudents> get chamadaStream => _chamadaController.stream;
 

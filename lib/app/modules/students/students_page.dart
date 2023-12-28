@@ -1,10 +1,11 @@
 import 'package:badges/badges.dart' as bg;
+import 'package:brasil_fields/brasil_fields.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:rx_notifier/rx_notifier.dart';
 import '../../utils/models/course.dart';
-import '../../utils/models/students_model.dart';
 import 'modelsView/students_listview_silver.dart';
 import 'students_controller.dart';
 import 'models/stream_students_model.dart';
@@ -29,32 +30,29 @@ class _StudentsPageState extends State<StudentsPage> {
   }
 
   @override
-  Widget build(BuildContext context) =>
-      FutureBuilder<(List<Students>, List<String>)>(
-          future: controller.init(widget.course),
-          builder: (BuildContext context,
-                  AsyncSnapshot<(List<Students>, List<String>)> isInited) =>
-              ValueListenableBuilder(
-                valueListenable: controller.textEditing,
-                builder: (BuildContext context,
-                    TextEditingValue textEditingValue, _) {
-                  List<StreamStudents>? list;
-                  if (isInited.hasData) {
-                    list = isInited.data!.$1
-                        .map((e) => StreamStudents(e))
-                        .toList();
-                    list = controller.search(list, textEditingValue.text);
-                  }
-                  return Scaffold(
-                    appBar: customAppBar(isInited.data?.$2 ?? []),
-                    body: customBody(context, list ?? []),
-                    floatingActionButton:
-                        customFloatingActionButton(context, list ?? []),
-                  );
-                },
-              ));
+  Widget build(BuildContext context) => FutureBuilder(
+      future: controller.initController(widget.course),
+      builder: (BuildContext context, AsyncSnapshot<bool> isInited) =>
+          ValueListenableBuilder(
+            valueListenable: controller.textEditing,
+            builder:
+                (BuildContext context, TextEditingValue textEditingValue, _) {
+              List<StreamStudents>? list;
+              if (isInited.hasData) {
+                list = controller.search(
+                  controller.studentsList.value,
+                  textEditingValue.text,
+                );
+              }
+              return Scaffold(
+                appBar: customAppBar(),
+                body: customBody(context, list ?? []),
+                floatingActionButton: customFloatingActionButton(context),
+              );
+            },
+          ));
 
-  AppBar customAppBar(List<String> dateList) => AppBar(
+  AppBar customAppBar() => AppBar(
         title: RxBuilder(
           builder: (BuildContext context) => bg.Badge(
             badgeStyle: bg.BadgeStyle(
@@ -69,7 +67,7 @@ class _StudentsPageState extends State<StudentsPage> {
             child: RxBuilder(
               builder: (BuildContext context) =>
                   controller.whatWidget.value == 0
-                      ? dateList.isNotEmpty
+                      ? controller.dateList.value.isNotEmpty
                           ? Row(
                               children: [
                                 const Text(
@@ -80,7 +78,7 @@ class _StudentsPageState extends State<StudentsPage> {
                                       decorationColor: Colors.black),
                                 ),
                                 DropdownBody(
-                                  dateList: dateList,
+                                  dateList: controller.dateList.value,
                                   dateSelected: controller.dateSelected,
                                 ),
                               ],
@@ -114,7 +112,8 @@ class _StudentsPageState extends State<StudentsPage> {
         ],
       );
 
-  Widget customBody(BuildContext context, List<StreamStudents> studentsList) =>
+  Widget customBody(
+          BuildContext context, List<StreamStudents> studentsListFilted) =>
       Container(
         width: MediaQuery.of(context).size.width,
         height: MediaQuery.of(context).size.height,
@@ -126,26 +125,24 @@ class _StudentsPageState extends State<StudentsPage> {
             fit: BoxFit.cover,
           ),
         ),
-        child: studentsList.isEmpty
+        child: studentsListFilted.isEmpty
             ? const Center(child: CircularProgressIndicator())
             : RxBuilder(
                 builder: (BuildContext context) => StudentsListViewSilver(
                   controller: controller,
                   list: controller.faceDetector.value == true
                       ? controller.studentsProvavelList.value
-                      : studentsList,
+                      : studentsListFilted,
                   faceDetectorView: controller.faceDetector.value == true
                       ? StudentsFaceDetectorView(
-                          studentsList: studentsList,
+                          studentsList: studentsListFilted,
                           studentsProvavel: controller.studentsProvavelList)
                       : null,
                 ),
               ),
       );
 
-  Widget customFloatingActionButton(
-          BuildContext context, List<StreamStudents> assistidoList) =>
-      SpeedDial(
+  Widget customFloatingActionButton(BuildContext context) => SpeedDial(
         animatedIcon: AnimatedIcons.menu_close,
         animatedIconTheme: const IconThemeData(size: 22.0),
         visible: true,
@@ -174,9 +171,10 @@ class _StudentsPageState extends State<StudentsPage> {
               backgroundColor: Colors.blue,
               label: 'Alterar Chamada',
               labelStyle: const TextStyle(fontSize: 18.0),
-              onTap: () {
+              onTap: () async {
                 controller.whatWidget.value = 0;
-                _checkDate(context);
+                await _checkDate(context);
+                setState(() {});
               }),
           SpeedDialChild(
             child: const Icon(
@@ -192,110 +190,95 @@ class _StudentsPageState extends State<StudentsPage> {
         ],
       );
 
-  Future _checkDate(BuildContext context) async {
+  Future<bool> _checkDate(BuildContext context) async {
     showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            backgroundColor: Theme.of(context).colorScheme.background,
-            title: const Text("Escolha a data da chamada"),
-            titleTextStyle: const TextStyle(
-                fontWeight: FontWeight.bold, color: Colors.black, fontSize: 20),
-            actionsOverflowButtonSpacing: 20,
-            actions: [
-              ElevatedButton(
-                  onPressed: () async {
-                    if (itensList != null &&
-                        dateSelected != null &&
-                        itensList.length > 1) {
-                      var itensRemove = dateSelected;
-                      if (itensList.last != itensRemove) {
-                        controller.studentsProviderStore
-                            .setConfig("dateSelected", [itensList.last]);
-                      } else {
-                        controller.studentsProviderStore.setConfig(
-                            "dateSelected",
-                            [itensList.elementAt(itensList.length - 2)]);
-                      }
-                      final itens = itensList
-                          .where((element) => element != itensRemove)
-                          .toList();
-                      controller.studentsProviderStore
-                          .setConfig("itensList", itens);
-                    } else {
-                      //Fazer uma mensagem de erro informando que não pode remover todos os elementos.
-                      debugPrint("Erro em dar presença!!!");
-                    }
-                  },
-                  child:
-                      const Icon(Icons.remove, color: Colors.white, size: 24)),
-              ElevatedButton(
-                  onPressed: () {
-                    _insertData(context);
-                  },
-                  child: const Icon(Icons.add, color: Colors.white, size: 24)),
-              ElevatedButton(
-                  onPressed: () {
-                    //Navigator.of(context, rootNavigator: true).pop();
-                    Modular.to.pop();
-                  },
-                  child: const Text("Close")),
-            ],
-            content: assistidosDropdownButton,
-          );
-        });
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: Theme.of(context).colorScheme.background,
+          title: const Text("Escolha a data da chamada"),
+          titleTextStyle: const TextStyle(
+              fontWeight: FontWeight.bold, color: Colors.black, fontSize: 20),
+          actionsOverflowButtonSpacing: 20,
+          actions: [
+            ElevatedButton(
+                onPressed: () async {
+                  var itensRemove = controller.dateSelected.value;
+                  if (controller.dateList.value.last != itensRemove) {
+                    controller.dateSelected.value =
+                        controller.dateList.value.last;
+                  } else {
+                    controller.dateSelected.value = controller.dateList.value
+                        .elementAt(controller.dateList.value.length - 2);
+                  }
+                  controller.chamadaGsheetProvider
+                      .removeAt(widget.course.idnumber, itensRemove);
+                },
+                child: const Icon(Icons.remove, color: Colors.white, size: 24)),
+            ElevatedButton(
+                onPressed: () async {
+                  await _insertData(context);
+                },
+                child: const Icon(Icons.add, color: Colors.white, size: 24)),
+            ElevatedButton(
+                onPressed: () {
+                  //Navigator.of(context, rootNavigator: true).pop();
+                  Modular.to.pop();
+                },
+                child: const Text("Close")),
+          ],
+          content: DropdownBody(
+            dateList: controller.dateList.value,
+            dateSelected: controller.dateSelected,
+          ),
+        );
+      },
+    );
+    return true;
   }
 
-  void _insertData(BuildContext context) {
+  Future<bool> _insertData(BuildContext context) async {
     String value = '';
     showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            backgroundColor: Theme.of(context).colorScheme.background,
-            title: const Text("Escolha a data da chamada"),
-            titleTextStyle: const TextStyle(
-                fontWeight: FontWeight.bold, color: Colors.black, fontSize: 20),
-            actionsOverflowButtonSpacing: 20,
-            actions: [
-              ElevatedButton(
-                  onPressed: () {
-                    //Navigator.of(context, rootNavigator: true).pop();
-                    Modular.to.pop();
-                  },
-                  child: const Text("Cancelar")),
-              ElevatedButton(
-                  onPressed: () async {
-                    final itensList = await controller.studentsProviderStore
-                        .getConfig("itensList");
-                    if (itensList != null) {
-                      controller.studentsProviderStore
-                          .setConfig("itensList", itensList + [value]);
-                      controller.studentsProviderStore
-                          .setConfig("dateSelected", [value]);
-                      Modular.to.pop();
-                    } else {
-                      //Fazer uma mensagem de erro informando que não pode remover todos os elementos.
-                      debugPrint(
-                          "Erro itensList nulo!! Não é possível inserir dados.");
-                    }
-                  },
-                  child: const Text("Salvar")),
-            ],
-            content: TextField(
-                decoration: const InputDecoration(
-                    border: UnderlineInputBorder(),
-                    icon: Icon(Icons.date_range),
-                    labelText: 'Informe a data'),
-                keyboardType: TextInputType.datetime,
-                inputFormatters: [
-                  FilteringTextInputFormatter.digitsOnly,
-                  DataInputFormatter(),
-                ],
-                onChanged: (v) {
-                  value = v;
-                }),
-          );
-        });
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: Theme.of(context).colorScheme.background,
+          title: const Text("Escolha a data da chamada"),
+          titleTextStyle: const TextStyle(
+              fontWeight: FontWeight.bold, color: Colors.black, fontSize: 20),
+          actionsOverflowButtonSpacing: 20,
+          actions: [
+            ElevatedButton(
+                onPressed: () {
+                  //Navigator.of(context, rootNavigator: true).pop();
+                  Modular.to.pop();
+                },
+                child: const Text("Cancelar")),
+            ElevatedButton(
+                onPressed: () async {
+                  controller.dateSelected.value = value;
+                  controller.chamadaGsheetProvider
+                      .insertAt(widget.course.idnumber, value);
+                },
+                child: const Text("Salvar")),
+          ],
+          content: TextField(
+              decoration: const InputDecoration(
+                  border: UnderlineInputBorder(),
+                  icon: Icon(Icons.date_range),
+                  labelText: 'Informe a data'),
+              keyboardType: TextInputType.datetime,
+              inputFormatters: [
+                FilteringTextInputFormatter.digitsOnly,
+                DataInputFormatter(),
+              ],
+              onChanged: (v) {
+                value = v;
+              }),
+        );
+      },
+    );
+    return true;
   }
 }

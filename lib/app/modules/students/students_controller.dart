@@ -12,8 +12,11 @@ import 'provider/chamada_gsheet_provider.dart';
 import 'services/face_detection_service.dart';
 
 class StudentsController {
-  final textEditing = TextEditingController(text: "");
+  final studentsList = RxNotifier<List<StreamStudents>>([]);
+  final dateList = RxNotifier<List<String>>([]);
   final dateSelected = RxNotifier<String>("");
+
+  final textEditing = TextEditingController(text: "");
   final isInitedController = RxNotifier<bool>(false);
   final focusNode = FocusNode();
   final whatWidget = RxNotifier<int>(0);
@@ -40,26 +43,49 @@ class StudentsController {
         faceDetectionService ?? Modular.get<FaceDetectionService>();
   }
 
-  Future<(List<Students>, List<String>)> init(Course course) async {
-    return (await getStudents(course), await geDateList(course));
+  Future<bool> initController(Course course) async {
+    studentsList.value =
+        (await getStudents(course)).map((e) => StreamStudents(e)).toList();
+    dateList.value = await geDateList(course);
+    dateSelected.value = dateList.value.last;
+    dateSelected.addListener(() {
+      getStudentChamadaValue(course);
+    });
+    getStudentChamadaValue(course);
+    return true;
+  }
+
+  getStudentChamadaValue(Course course) async {
+    final values =
+        await chamadaGsheetProvider.getValues(table: course.shortname);
+    final index = values['Nome']!.indexOf(dateSelected.value);
+    for (var e in studentsList.value) {
+      if (values['${e.firstname} ${e.lastname}']?[index] == "P") {
+        e.insertChamadaFunc(dateSelected.value);
+      }
+    }
   }
 
   Future<List<Students>> getStudents(Course course) async {
     final token = await configStorage.getUserToken();
-    return (await moodleProvider.getUsersByCourseId(course.id.toString(), token)).object
-        as List<Students>;
+    List<Students> studentsList =
+        (await moodleProvider.getUsersByCourseId(course.id.toString(), token))
+            .object as List<Students>;
+    return studentsList;
   }
 
   Future<List<String>> geDateList(Course course) async {
     final list = await chamadaGsheetProvider.getItem(
-      //course.idnumber
-        table: course.shortname, userName: "Nome", date: "");
+        //course.idnumber
+        table: course.shortname,
+        userName: "Nome",
+        date: "");
     dateSelected.value = list.last;
     return list;
   }
 
   List<StreamStudents> search(
-      List<StreamStudents> studentsList, termosDeBusca) {
+      List<StreamStudents> studentsList, String termosDeBusca) {
     return studentsList
         .where((students) => (students.firstname + students.lastname)
             .toLowerCase()

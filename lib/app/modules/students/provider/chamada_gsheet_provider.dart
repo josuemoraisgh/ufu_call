@@ -67,6 +67,16 @@ class ChamadaGsheetProvider {
     return resp.toString();
   }
 
+  Future<Map<String, dynamic>> getValues({required String table}) async {
+    final resp = await sendGet(
+      table: table,
+      func: 'getAll',
+      userName: "",
+      date: "",
+    );
+    return resp;
+  }
+
   Future<List<String>> getItem(
       {required String table,
       required String userName,
@@ -96,5 +106,25 @@ class ChamadaGsheetProvider {
       return uil;
     }
     return null;
+  }
+
+  Future<String> removeAt(String table, String date) async {
+    final resp = await sendGet(
+      table: table,
+      func: 'removeAt',
+      userName: "",
+      date: date,
+    );
+    return resp.toString();
+  }
+
+  Future<String> insertAt(String table, String date) async {
+    final resp = await sendGet(
+      table: table,
+      func: 'insertAt',
+      userName: "",
+      date: date,
+    );
+    return resp.toString();
   }
 }

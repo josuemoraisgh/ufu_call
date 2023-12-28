@@ -11,6 +11,7 @@ class HomeController {
   User? user;
   Token? token;
   List<Course>? courses;
+
   late final ConfigStorage moodleLocalStorage;
   late final MoodleProvider moodleProvider;
   HomeController(

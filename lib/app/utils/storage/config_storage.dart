@@ -17,6 +17,10 @@ class ConfigStorage {
   }
 
   Future<void> _init() async {
+    if (!Hive.isBoxOpen('MoodleDatas')) {
+      Hive.registerAdapter(TokenAdapter());
+      Hive.registerAdapter(UserAdapter());
+    }
     if (!configCompleter.isCompleted) {
       configCompleter.complete(await Hive.openBox<List<String>>('MoodleDatas'));
     }
