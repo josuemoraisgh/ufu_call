@@ -110,7 +110,7 @@ class StreamStudents extends Students {
     _chamadaController.sink.add(this);
     Future.delayed(const Duration(seconds: 0),
         () => countPresenteController.value + value);
-    await controller.chamadaGsheetProvider.putItem(
+    await controller.chamadaGsheetProvider.put(
         table: sortNameCourse,
         userName: '$firstname $lastname',
         date: dateSelected,

@@ -211,7 +211,7 @@ class _StudentsPageState extends State<StudentsPage> {
                         .elementAt(controller.dateList.value.length - 2);
                   }
                   controller.chamadaGsheetProvider
-                      .removeAt(widget.course.idnumber, itensRemove);
+                      .del(table: widget.course.idnumber, date: itensRemove);
                   Modular.to.pop();
                 },
                 child: const Icon(Icons.remove, size: 24)),
@@ -256,8 +256,8 @@ class _StudentsPageState extends State<StudentsPage> {
                 child: const Text("Cancelar")),
             ElevatedButton(
                 onPressed: () async {
-                  controller.chamadaGsheetProvider
-                      .insertAt(widget.course.shortname, value);
+                  controller.chamadaGsheetProvider.put(
+                      table: widget.course.shortname, date: value, value: "");
                   controller.dateList.value.add(value);
                   controller.dateSelected.value = value;
                   Modular.to.pop();

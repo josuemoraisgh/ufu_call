@@ -52,11 +52,17 @@ class ChamadaGsheetProvider {
     return null;
   }
 
-  Future<String> putItem(
+//Funcão "put" pode inserir valores de quatro formas diferentes
+//1º Se variável nome e date forem vazios, insere a tabela toda.
+//2º Se variável nome for vazio, insere a coluna de date da tabela.
+//3º Se variável date for vazio, insere a linha de nome da tabela.
+//4º Se tem todas as variáveis, insere no lugar específico.
+//5º Se tem a Variável nome ou date mas value for vazio, insere apenas o nome ou a data.
+  Future<bool> put(
       {required String table,
-      required String userName,
-      required String date,
-      required String value}) async {
+      String value = "",
+      String userName = "",
+      String date = ""}) async {
     final resp = await sendGet(
       table: table,
       func: 'put',
@@ -64,30 +70,39 @@ class ChamadaGsheetProvider {
       date: date,
       value: value,
     );
-    return resp.toString();
-  }
-
-  Future<Map<String, dynamic>> getValues({required String table}) async {
-    final resp = await sendGet(
-      table: table,
-      func: 'getAll',
-      userName: "",
-      date: "",
-    );
     return resp;
   }
 
-  Future<List<String>> getItem(
-      {required String table,
-      required String userName,
-      required String date}) async {
-    final List resp = await sendGet(
+//Funcão "get" pode retornar valores de quatro formas diferentes
+//1º Se variável nome e date forem vazios, retorna o JSON das linha de toda a tabela.
+//2º Se variável nome for vazio, retorna o JSON da coluna de date da tabela.
+//3º Se variável date for vazio, retorna o JSON da linha de nome da tabela.
+//4º Se tem todas as variáveis, retorna o JSON "value" do item escolhido.
+  Future<Map<String, dynamic>> get(
+      {required String table, String userName = "", String date = ""}) async {
+    final resp = await sendGet(
       table: table,
       func: 'get',
       userName: userName,
       date: date,
     );
-    return resp.map((e) => e.toString()).toList();
+    return resp;
+  }
+
+//Funcão "dell" pode deletar valores de quatro formas diferentes
+//1º Se variável nome e date forem vazios, limpa a tabela.
+//2º Se variável nome for vazio, limpa a coluna de date da tabela.
+//3º Se variável date for vazio, limpa a linha de nome da tabela.
+//4º Se tem todas as variáveis, limpa um lugar específico.
+  Future<bool> del(
+      {required String table, String userName = "", String date = ""}) async {
+    final resp = await sendGet(
+      table: table,
+      func: 'del',
+      userName: "",
+      date: date,
+    );
+    return resp;
   }
 
   Future<Uint8List?> getFile(String url) async {
@@ -106,25 +121,5 @@ class ChamadaGsheetProvider {
       return uil;
     }
     return null;
-  }
-
-  Future<String> removeAt(String table, String date) async {
-    final resp = await sendGet(
-      table: table,
-      func: 'removeAt',
-      userName: "",
-      date: date,
-    );
-    return resp.toString();
-  }
-
-  Future<String> insertAt(String table, String date) async {
-    final resp = await sendGet(
-      table: table,
-      func: 'insertAt',
-      userName: "",
-      date: date,
-    );
-    return resp.toString();
   }
 }

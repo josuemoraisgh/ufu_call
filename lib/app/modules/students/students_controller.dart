@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
+import 'package:intl/intl.dart';
 import 'package:rx_notifier/rx_notifier.dart';
 import '../../utils/constants.dart';
 import '../../utils/models/course.dart';
@@ -57,7 +58,7 @@ class StudentsController {
 
   getStudentChamadaValue(Course course) async {
     final values =
-        await chamadaGsheetProvider.getValues(table: course.shortname);
+        (await chamadaGsheetProvider.get(table: course.shortname))['value'];
     final index = values['Nome']!.indexOf(dateSelected.value);
     if (index >= 0) {
       for (var e in studentsList.value) {
@@ -77,11 +78,9 @@ class StudentsController {
   }
 
   Future<List<String>> geDateList(Course course) async {
-    final list = await chamadaGsheetProvider.getItem(
-        //course.idnumber
-        table: course.shortname,
-        userName: "Nome",
-        date: "");
+    var list = (await chamadaGsheetProvider.get(
+        table: course.shortname, userName: "Nome", date: ""))["Nome"];
+    list = list.isEmpty ? [DateFormat('dd/MM').format(DateTime.now())] : list;
     dateSelected.value = list.last;
     return list;
   }
