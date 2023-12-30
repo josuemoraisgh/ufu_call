@@ -57,8 +57,7 @@ class StudentsController {
   }
 
   getStudentChamadaValue(Course course) async {
-    final values =
-        (await chamadaGsheetProvider.get(table: course.shortname))['value'];
+    final values = await chamadaGsheetProvider.get(table: course.shortname);
     final index = values['Nome']!.indexOf(dateSelected.value);
     if (index >= 0) {
       for (var e in studentsList.value) {
@@ -78,11 +77,11 @@ class StudentsController {
   }
 
   Future<List<String>> geDateList(Course course) async {
-    var list = (await chamadaGsheetProvider.get(
+    List list = (await chamadaGsheetProvider.get(
         table: course.shortname, userName: "Nome", date: ""))["Nome"];
     list = list.isEmpty ? [DateFormat('dd/MM').format(DateTime.now())] : list;
     dateSelected.value = list.last;
-    return list;
+    return list.map((e) => e.toString()).toList();
   }
 
   List<StreamStudents> search(
