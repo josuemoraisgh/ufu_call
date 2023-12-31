@@ -2,6 +2,7 @@ import 'dart:typed_data';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:rx_notifier/rx_notifier.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../utils/constants.dart';
 import '../students_controller.dart';
@@ -160,39 +161,43 @@ class StudentsListViewSilver extends StatelessWidget {
               ),
             ),
           ),
-          dateSelected == null || dateSelected == ""
-              ? CupertinoButton(
-                  padding: EdgeInsets.zero,
-                  onPressed: () {},
-                  child: const Icon(
-                    CupertinoIcons.hand_thumbsdown,
-                    color: Colors.grey,
-                    semanticLabel: 'Ausente',
-                  ))
-              : StreamBuilder(
-                  initialData: pessoa,
-                  stream: pessoa.chamadaStream,
-                  builder: (BuildContext context,
-                      AsyncSnapshot<StreamStudents> assistido) {
-                    return CupertinoButton(
-                      padding: EdgeInsets.zero,
-                      onPressed: () =>
-                          assistido.data!.chamadaToogleFunc(dateSelected),
-                      child: assistido.data?.chamada![dateSelected] == "P"
-                          ? const Icon(
-                              CupertinoIcons.hand_thumbsup,
-                              color: Colors.green,
-                              size: 30.0,
-                              semanticLabel: 'Presente',
-                            )
-                          : const Icon(
-                              CupertinoIcons.hand_thumbsdown,
-                              color: Colors.red,
-                              semanticLabel: 'Ausente',
-                            ),
-                    );
-                  },
-                ),
+          RxBuilder(
+            builder: (BuildContext context) => controller.isRunningSync.value
+                ? const Center(child: CircularProgressIndicator())
+                : dateSelected == null || dateSelected == ""
+                    ? CupertinoButton(
+                        padding: EdgeInsets.zero,
+                        onPressed: () {},
+                        child: const Icon(
+                          CupertinoIcons.hand_thumbsdown,
+                          color: Colors.grey,
+                          semanticLabel: 'Ausente',
+                        ))
+                    : StreamBuilder(
+                        initialData: pessoa,
+                        stream: pessoa.chamadaStream,
+                        builder: (BuildContext context,
+                            AsyncSnapshot<StreamStudents> assistido) {
+                          return CupertinoButton(
+                            padding: EdgeInsets.zero,
+                            onPressed: () =>
+                                assistido.data!.chamadaToogleFunc(dateSelected),
+                            child: assistido.data?.chamada![dateSelected] == "P"
+                                ? const Icon(
+                                    CupertinoIcons.hand_thumbsup,
+                                    color: Colors.green,
+                                    size: 30.0,
+                                    semanticLabel: 'Presente',
+                                  )
+                                : const Icon(
+                                    CupertinoIcons.hand_thumbsdown,
+                                    color: Colors.red,
+                                    semanticLabel: 'Ausente',
+                                  ),
+                          );
+                        },
+                      ),
+          ),
         ],
       ),
     );

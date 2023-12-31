@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'package:flutter/services.dart';
 import 'package:flutter_modular/flutter_modular.dart';
-import 'package:rx_notifier/rx_notifier.dart';
 import '../../../utils/constants.dart';
 
 import '../../../utils/models/students_model.dart';
@@ -13,7 +12,6 @@ class StreamStudents extends Students {
   Uint8List? _uint8ListImage;
   final StreamController<StreamStudents> _chamadaController =
       StreamController<StreamStudents>.broadcast();
-  static final countPresenteController = RxNotifier<int>(0);
   final StudentsController controller = Modular.get<StudentsController>();
   StreamStudents(Students students, {String? sortNameCourse})
       : super(
@@ -41,12 +39,6 @@ class StreamStudents extends Students {
 
   Students get students => this;
 
-  static int get countPresente => countPresenteController.value;
-  static set countPresente(int value) {
-    Future.delayed(const Duration(seconds: 0),
-        () => countPresenteController.value = value);
-  }
-
   Future<Uint8List> get photoUint8List async {
     if (_uint8ListImage != null) return _uint8ListImage!;
     Token token = await controller.configStorage.getUserToken();
@@ -68,7 +60,7 @@ class StreamStudents extends Students {
     return Uint8List(0);
   }
 
-  bool insertChamadaFunc(dateSelected) {
+  bool insertChamadaFunc(String dateSelected, {bool isAtualiza = true}) {
     if ((chamada != null) && (chamada!.containsKey(dateSelected))) {
       if (chamada![dateSelected] != "P") {
         chamada![dateSelected] = "P";
@@ -80,19 +72,19 @@ class StreamStudents extends Students {
         chamada?.addAll({dateSelected: "P"});
       }
     }
-    atualizaChamada(dateSelected, 1);
+    atualizaChamada(dateSelected, 1, isAtualiza);
     return true;
   }
 
-  int chamadaToogleFunc(dateSelected) {
+  int chamadaToogleFunc(String dateSelected, {bool isAtualiza = true}) {
     if ((chamada != null) && (chamada!.containsKey(dateSelected))) {
       if (chamada![dateSelected] != "P") {
         chamada![dateSelected] = "P";
-        atualizaChamada(dateSelected, 1);
+        atualizaChamada(dateSelected, 1, isAtualiza);
         return 1;
       } else {
-        chamada![dateSelected] = "";
-        atualizaChamada(dateSelected, -1);
+        chamada![dateSelected] = " "; //Tem que ser um espaço e não string vazia
+        atualizaChamada(dateSelected, -1, isAtualiza);
         return -1;
       }
     } else {
@@ -101,20 +93,26 @@ class StreamStudents extends Students {
       } else {
         chamada?.addAll({dateSelected: "P"});
       }
-      atualizaChamada(dateSelected, 1);
+      atualizaChamada(dateSelected, 1, isAtualiza);
       return 1;
     }
   }
 
-  atualizaChamada(String dateSelected, int value) async {
+  atualizaChamada(String dateSelected, int value, bool isAtualiza) async {
     _chamadaController.sink.add(this);
     Future.delayed(const Duration(seconds: 0),
-        () => countPresenteController.value + value);
-    await controller.chamadaGsheetProvider.put(
-        table: sortNameCourse,
-        userName: '$firstname $lastname',
-        date: dateSelected,
-        value: chamada![dateSelected]!);
+        () => controller.countPresenteController.value += value);
+    if (isAtualiza) {
+      if (controller.mapSync.value['$firstname $lastname'] == null) {
+        controller.mapSync.value['$firstname $lastname'] = {
+          dateSelected: chamada![dateSelected]!
+        };
+      } else {
+        controller.mapSync.value['$firstname $lastname']![dateSelected] =
+            chamada![dateSelected]!;
+      }
+      controller.countSync.value++;
+    }
   }
 
   @override

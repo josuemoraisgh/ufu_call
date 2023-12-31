@@ -13,18 +13,23 @@ import 'provider/chamada_gsheet_provider.dart';
 import 'services/face_detection_service.dart';
 
 class StudentsController {
+  final isInitedController = RxNotifier<bool>(false);
+
   final studentsList = RxNotifier<List<StreamStudents>>([]);
+  final studentsProvavelList = RxNotifier<List<StreamStudents>>([]);
   final dateList = RxNotifier<List<String>>([]);
   final dateSelected = RxNotifier<String>("");
+  final countPresenteController = RxNotifier<int>(0);
 
   final textEditing = TextEditingController(text: "");
-  final isInitedController = RxNotifier<bool>(false);
   final focusNode = FocusNode();
   final whatWidget = RxNotifier<int>(0);
-  final studentsProvavelList = RxNotifier<List<StreamStudents>>([]);
+
   final faceDetector = RxNotifier<bool>(false);
+
   final isRunningSync = RxNotifier<bool>(false);
   final countSync = RxNotifier<int>(0);
+  final mapSync = RxNotifier<Map<String, Map<String, String>>>({});
 
   late final ChamadaGsheetProvider chamadaGsheetProvider;
   late final ConfigStorage configStorage;
@@ -45,11 +50,13 @@ class StudentsController {
   }
 
   Future<bool> initController(Course course) async {
+    countPresenteController.value = 0;
     studentsList.value = (await getStudents(course))
         .map((e) => StreamStudents(e, sortNameCourse: course.shortname))
         .toList();
     dateList.value = await geDateList(course);
     dateSelected.addListener(() {
+      countPresenteController.value = 0;
       getStudentChamadaValue(course);
     });
     dateSelected.value = dateList.value.last;
@@ -62,7 +69,7 @@ class StudentsController {
     if (index >= 0) {
       for (var e in studentsList.value) {
         if (values['${e.firstname} ${e.lastname}']?[index] == "P") {
-          e.insertChamadaFunc(dateSelected.value);
+          e.insertChamadaFunc(dateSelected.value, isAtualiza: false);
         }
       }
     }
@@ -97,11 +104,29 @@ class StudentsController {
         .toList()
       ..sort((a, b) {
         // Primeiro, comparar pelo campo nome
-        int comparacao = a.firstname.compareTo(b.firstname);
+        int comparacao =
+            a.firstname.toLowerCase().compareTo(b.firstname.toLowerCase());
         if (comparacao == 0) {
-          return a.lastname.compareTo(b.lastname);
+          return a.lastname.toLowerCase().compareTo(b.lastname.toLowerCase());
         }
         return comparacao;
       });
+  }
+
+  void sync(Course course) async {
+    if (isRunningSync.value == false) {
+      Future.delayed(
+          const Duration(seconds: 0), () => isRunningSync.value = true);
+      await chamadaGsheetProvider.put(
+        table: course.shortname,
+        userName: '',
+        date: '',
+        value: mapSync.value,
+      );
+      countSync.value = 0;
+      mapSync.value = {};
+      Future.delayed(
+          const Duration(seconds: 0), () => isRunningSync.value = false);
+    }
   }
 }

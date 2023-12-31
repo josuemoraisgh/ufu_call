@@ -24,58 +24,64 @@ class _DropdownBodyState extends State<DropdownBody> {
 
   @override
   Widget build(BuildContext context) {
-    return ValueListenableBuilder<String>(
-      valueListenable: controller.dateSelected,
-      builder: (BuildContext context, String dateSelected, _) =>
-          dateSelected != ""
-              ? SizedBox(
-                  height: 25,
-                  child: DropdownButton<String>(
-                    value: dateSelected,
-                    onChanged: (String? novoItemSelecionado) {
-                      if (novoItemSelecionado != null) {
-                        controller.dateSelected.value = novoItemSelecionado;
-                      }
-                    },
-                    style: const TextStyle(
-                      color: Colors.black,
-                    ),
-                    underline: Container(),
-                    iconEnabledColor: Colors.white,
-                    dropdownColor: Theme.of(context).colorScheme.background,
-                    focusColor: Theme.of(context).colorScheme.background,
-                    selectedItemBuilder: (BuildContext context) {
-                      return controller.dateList.value
-                          .map((String value) {
-                            return Text(
-                              value,
-                              style: TextStyle(
-                                fontSize: 18,
-                                color: widget.selectedItemColor,
+    return ValueListenableBuilder<List<String>>(
+      valueListenable: controller.dateList,
+      builder: (BuildContext context, List<String> dateList, _) =>
+          ValueListenableBuilder<String>(
+        valueListenable: controller.dateSelected,
+        builder: (BuildContext context, String dateSelected, _) =>
+            (dateSelected != "" &&
+                    dateList.isNotEmpty &&
+                    dateList.contains(dateSelected))
+                ? SizedBox(
+                    height: 25,
+                    child: DropdownButton<String>(
+                      value: dateSelected,
+                      onChanged: (String? novoItemSelecionado) {
+                        if (novoItemSelecionado != null) {
+                          controller.dateSelected.value = novoItemSelecionado;
+                        }
+                      },
+                      style: const TextStyle(
+                        color: Colors.black,
+                      ),
+                      underline: Container(),
+                      iconEnabledColor: Colors.white,
+                      dropdownColor: Theme.of(context).colorScheme.background,
+                      focusColor: Theme.of(context).colorScheme.background,
+                      selectedItemBuilder: (BuildContext context) {
+                        return dateList
+                            .map((String value) {
+                              return Text(
+                                value,
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  color: widget.selectedItemColor,
+                                ),
+                              );
+                            })
+                            .toList()
+                            .cast<Widget>();
+                      },
+                      items: dateList
+                          .map((String dropDownStringItem) {
+                            return DropdownMenuItem<String>(
+                              value: dropDownStringItem,
+                              child: Text(
+                                dropDownStringItem,
+                                style: const TextStyle(
+                                  fontSize: 18,
+                                  color: Colors.black,
+                                ),
                               ),
                             );
                           })
                           .toList()
-                          .cast<Widget>();
-                    },
-                    items: controller.dateList.value
-                        .map((String dropDownStringItem) {
-                          return DropdownMenuItem<String>(
-                            value: dropDownStringItem,
-                            child: Text(
-                              dropDownStringItem,
-                              style: const TextStyle(
-                                fontSize: 18,
-                                color: Colors.black,
-                              ),
-                            ),
-                          );
-                        })
-                        .toList()
-                        .cast<DropdownMenuItem<String>>(),
-                  ),
-                )
-              : const Center(child: CircularProgressIndicator()),
+                          .cast<DropdownMenuItem<String>>(),
+                    ),
+                  )
+                : const Center(child: CircularProgressIndicator()),
+      ),
     );
   }
 }

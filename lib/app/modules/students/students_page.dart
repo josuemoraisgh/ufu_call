@@ -30,6 +30,12 @@ class _StudentsPageState extends State<StudentsPage> {
   }
 
   @override
+  void dispose() {
+    controller.sync(widget.course);
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) => FutureBuilder(
       future: controller.initController(widget.course),
       builder: (BuildContext context, AsyncSnapshot<bool> isInited) =>
@@ -56,12 +62,12 @@ class _StudentsPageState extends State<StudentsPage> {
         title: RxBuilder(
           builder: (BuildContext context) => bg.Badge(
             badgeStyle: bg.BadgeStyle(
-                badgeColor: StreamStudents.countPresenteController.value == 0
+                badgeColor: controller.countPresenteController.value == 0
                     ? Colors.red
                     : Colors.green),
             position: bg.BadgePosition.topStart(top: -10, start: -15),
             badgeContent: Text(
-              '${StreamStudents.countPresenteController.value}',
+              '${controller.countPresenteController.value}',
               style: const TextStyle(color: Colors.white, fontSize: 10.0),
             ),
             child: RxBuilder(
@@ -102,10 +108,16 @@ class _StudentsPageState extends State<StudentsPage> {
                 '${controller.countSync.value}',
                 style: const TextStyle(color: Colors.white, fontSize: 10.0),
               ),
-              child: IconButton(
-                icon: const Icon(Icons.sync),
-                onPressed: () async {},
-              ),
+              child: controller.isRunningSync.value
+                  ? const SizedBox(
+                      height: 5.0,
+                      width: 5.0,
+                      child: Center(child: CircularProgressIndicator()),
+                    )
+                  : IconButton(
+                      icon: const Icon(Icons.sync),
+                      onPressed: () => controller.sync(widget.course),
+                    ),
             ),
           ),
         ],
@@ -168,7 +180,7 @@ class _StudentsPageState extends State<StudentsPage> {
           SpeedDialChild(
               child: const Icon(Icons.add_box),
               backgroundColor: Colors.blue,
-              label: 'Alterar Chamada',
+              label: 'Tipo da Chamada',
               labelStyle: const TextStyle(fontSize: 18.0),
               onTap: () async {
                 controller.whatWidget.value = 0;
@@ -258,7 +270,10 @@ class _StudentsPageState extends State<StudentsPage> {
                 onPressed: () async {
                   controller.chamadaGsheetProvider.put(
                       table: widget.course.shortname, date: value, value: "");
-                  controller.dateList.value.add(value);
+                  var aux = controller.dateList.value;
+                  aux.add(value);
+                  aux.sort((a, b) => a.compareTo(b));
+                  controller.dateList.value = aux;
                   controller.dateSelected.value = value;
                   Modular.to.pop();
                 },
@@ -282,4 +297,18 @@ class _StudentsPageState extends State<StudentsPage> {
     );
     return true;
   }
+/*
+  int compareDate(String a, String b) {
+    final aRef = a.split("/");
+    final aRef0 = int.parse(aRef[0]);
+    final aRef1 = int.parse(aRef[1]);
+    final bRef = b.split("/");
+    final bRef0 = int.parse(bRef[0]);
+    final bRef1 = int.parse(bRef[1]);
+    return ((aRef0 == bRef0) && (aRef1 == bRef1))
+        ? 0
+        : (aRef1 > bRef1) || ((aRef0 == bRef0) && (aRef1 > bRef1))
+            ? 1
+            : -1;
+  }*/
 }

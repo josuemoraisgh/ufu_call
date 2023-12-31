@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:typed_data';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
@@ -17,8 +18,7 @@ class ChamadaGsheetProvider {
       {required String table,
       required String func,
       required String userName,
-      required String date,
-      String? value}) async {
+      required String date}) async {
     while (_countConnection >= 10) {
       //so faz 10 requisições por vez.
       await Future.delayed(const Duration(milliseconds: 500));
@@ -31,7 +31,6 @@ class ChamadaGsheetProvider {
         "func": func,
         "userName": userName,
         "date": date,
-        "value": value ?? "",
       },
     );
     _countConnection--;
@@ -52,18 +51,77 @@ class ChamadaGsheetProvider {
     return null;
   }
 
-//Funcão "put" pode inserir valores de quatro formas diferentes
-//1º Se variável nome e date forem vazios, insere a tabela toda.
+  Future<dynamic> sendPost(
+      {required String table,
+      required String func,
+      required String userName,
+      required String date,
+      dynamic value}) async {
+    while (_countConnection >= 10) {
+      //so faz 10 requisições por vez.
+      await Future.delayed(const Duration(milliseconds: 500));
+    }
+    _countConnection++;
+    dynamic resp;
+    await provider
+        .post(
+      '$baseUrl/macros/s/AKfycbz4YPsxKO5R9y5hWo0WRaRIEdRxcsjdRWKc_7ktlmdDghXiuy2CzJCjaNhSrNyVF4mg/exec',
+      queryParameters: {
+        "table": table,
+        "func": func,
+        "userName": userName,
+        "date": date,
+      },
+      options: Options(
+          followRedirects: false,
+          validateStatus: (status) {
+            return status! < 500;
+          }),
+      /*options: Options(
+        headers: {
+          HttpHeaders.contentTypeHeader: "application/json",
+        },
+      ),*/
+      //data: FormData.fromMap({'p3': await MultipartFile.fromFile('./text.txt',filename: 'upload.txt')}),
+      data: jsonEncode(value ?? ""),
+    )
+        .then(
+      (value) async {
+        Response response;
+        if (value.statusCode == 302) {
+          var location = value.headers["location"];
+          response = await provider.get(location![0]);
+        } else {
+          response = value;
+        }
+        if (response.statusCode == 200) {
+          var map = response.data as Map;
+          if ((map["status"] ?? "Error") == "SUCCESS") {
+            resp = map["items"];
+          } else {
+            debugPrint("POST ERROR - ${map["status"]}");
+          }
+        } else {
+          debugPrint("POST ERROR - $response");
+        }
+      },
+    );
+    _countConnection++;
+    return resp;
+  }
+
+//Funcão "put" pode inserir valores de cinco formas diferentes
+//1º Se variável nome e date forem vazios, insere conforme o Map enviado.
 //2º Se variável nome for vazio, insere a coluna de date da tabela.
 //3º Se variável date for vazio, insere a linha de nome da tabela.
 //4º Se tem todas as variáveis, insere no lugar específico.
-//5º Se tem a Variável nome ou date mas value for vazio, insere apenas o nome ou a data.
+//5º Se tem a Variável "nome" e/ou "date" mas não tem "value", insere apenas a coluna "nome" e/ou "date".
   Future<bool> put(
       {required String table,
-      String value = "",
       String userName = "",
-      String date = ""}) async {
-    final resp = await sendGet(
+      String date = "",
+      dynamic value = ""}) async {
+    final resp = await sendPost(
       table: table,
       func: 'put',
       userName: userName,
