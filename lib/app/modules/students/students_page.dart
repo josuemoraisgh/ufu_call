@@ -108,16 +108,15 @@ class _StudentsPageState extends State<StudentsPage> {
                 '${controller.countSync.value}',
                 style: const TextStyle(color: Colors.white, fontSize: 10.0),
               ),
-              child: controller.isRunningSync.value
-                  ? const SizedBox(
-                      height: 5.0,
-                      width: 5.0,
-                      child: Center(child: CircularProgressIndicator()),
-                    )
-                  : IconButton(
-                      icon: const Icon(Icons.sync),
-                      onPressed: () => controller.sync(widget.course),
-                    ),
+              child: Padding(
+                padding: const EdgeInsets.only(right: 10),
+                child: IconButton(
+                  icon: controller.isRunningSync.value
+                      ? const Center(child: CircularProgressIndicator())
+                      : const Icon(Icons.sync),
+                  onPressed: () => controller.sync(widget.course),
+                ),
+              ),
             ),
           ),
         ],

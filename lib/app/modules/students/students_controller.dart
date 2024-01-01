@@ -65,10 +65,10 @@ class StudentsController {
 
   getStudentChamadaValue(Course course) async {
     final values = await chamadaGsheetProvider.get(table: course.shortname);
-    final index = values['Nome']!.indexOf(dateSelected.value);
-    if (index >= 0) {
+    if (values[values.keys.first].containsKey(dateSelected.value)) {
       for (var e in studentsList.value) {
-        if (values['${e.firstname} ${e.lastname}']?[index] == "P") {
+        if (values['${e.firstname} ${e.lastname}']?[dateSelected.value] ==
+            "P") {
           e.insertChamadaFunc(dateSelected.value, isAtualiza: false);
         }
       }
@@ -85,7 +85,9 @@ class StudentsController {
 
   Future<List<String>> geDateList(Course course) async {
     List list = (await chamadaGsheetProvider.get(
-        table: course.shortname, userName: "Nome", date: ""))["Nome"];
+            table: course.shortname, userName: "Nome", date: ""))["Nome"]
+        .keys
+        .toList();
     list = list.isEmpty ? [DateFormat('dd/MM').format(DateTime.now())] : list;
     dateSelected.value = list.last;
     return list.map((e) => e.toString()).toList();
