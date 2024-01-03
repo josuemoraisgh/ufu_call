@@ -103,14 +103,16 @@ class StreamStudents extends Students {
     Future.delayed(const Duration(seconds: 0),
         () => controller.countPresenteController.value += value);
     if (isAtualiza) {
-      if (controller.mapSync.value['$firstname $lastname'] == null) {
-        controller.mapSync.value['$firstname $lastname'] = {
+      var (_, mapSync) = await controller.configStorage.getMapSync();
+      if (mapSync['$firstname $lastname'] == null) {
+        mapSync['$firstname $lastname'] = {
           dateSelected: chamada![dateSelected]!
         };
       } else {
-        controller.mapSync.value['$firstname $lastname']![dateSelected] =
+        mapSync['$firstname $lastname']![dateSelected] =
             chamada![dateSelected]!;
       }
+      controller.configStorage.setMapSync(sortNameCourse, mapSync);
       controller.countSync.value++;
     }
   }

@@ -100,6 +100,24 @@ class ConfigStorage {
     return box.put(ConfigureKeys.COURSE_SEL, [courseSelJson]);
   }
 
+  Future<(String, Map<String, dynamic>)> getMapSync() async {
+    final box = await configCompleter.future;
+    final aux = box.get(ConfigureKeys.MAP_SYNC);
+    return (
+      aux?[0] ?? "",
+      aux?[1] != null
+          ? json.decode(aux![1]) as Map<String, dynamic>
+          : <String, dynamic>{}
+    );
+  }
+
+  Future<void> setMapSync(
+      String courseShortName, Map<String, dynamic> mapSync) async {
+    final box = await configCompleter.future;
+    String mapSelJson = json.encode(mapSync);
+    return box.put(ConfigureKeys.MAP_SYNC, [courseShortName, mapSelJson]);
+  }
+
   Future<File> addSetFile(
       String fileName, final Uint8List uint8ListImage) async {
     final directory = await getApplicationDocumentsDirectory();

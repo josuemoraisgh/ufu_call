@@ -135,6 +135,8 @@ class ConfigureKeys {
   static const String SITE_URL = "site_url";
   // ignore: constant_identifier_names
   static const String COURSE_SEL = "course_sel";
+  // ignore: constant_identifier_names
+  static const String MAP_SYNC = "map_sync";
 }
 
 class ProgressDialogTitles {

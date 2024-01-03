@@ -57,14 +57,12 @@ class ChamadaGsheetProvider {
       required String userName,
       required String date,
       dynamic value}) async {
-    while (_countConnection >= 10) {
-      //so faz 10 requisições por vez.
+    while (_countConnection >= 15) {
+      //faz apenas 15 requisições por vez.
       await Future.delayed(const Duration(milliseconds: 500));
     }
     _countConnection++;
-    dynamic resp;
-    await provider
-        .post(
+    Response response = await provider.post(
       '$baseUrl/macros/s/AKfycbz4YPsxKO5R9y5hWo0WRaRIEdRxcsjdRWKc_7ktlmdDghXiuy2CzJCjaNhSrNyVF4mg/exec',
       queryParameters: {
         "table": table,
@@ -84,29 +82,29 @@ class ChamadaGsheetProvider {
       ),*/
       //data: FormData.fromMap({'p3': await MultipartFile.fromFile('./text.txt',filename: 'upload.txt')}),
       data: jsonEncode(value ?? ""),
-    )
-        .then(
-      (value) async {
-        Response response;
-        if (value.statusCode == 302) {
-          var location = value.headers["location"];
-          response = await provider.get(location![0]);
-        } else {
-          response = value;
-        }
-        if (response.statusCode == 200) {
-          var map = response.data as Map;
-          if ((map["status"] ?? "Error") == "SUCCESS") {
-            resp = map["items"];
-          } else {
-            debugPrint("POST ERROR - ${map["status"]}");
-          }
-        } else {
-          debugPrint("POST ERROR - $response");
-        }
-      },
     );
-    _countConnection++;
+    _countConnection--;
+    if (response.statusCode == 302) {
+      var location = response.headers["location"];
+      while (_countConnection >= 15) {
+        //faz apenas 15 requisições por vez.
+        await Future.delayed(const Duration(milliseconds: 500));
+      }
+      _countConnection++;
+      response = await provider.get(location![0]);
+      _countConnection--;
+    }
+    dynamic resp;
+    if (response.statusCode == 200) {
+      var map = response.data as Map;
+      if ((map["status"] ?? "Error") == "SUCCESS") {
+        resp = map["items"];
+      } else {
+        debugPrint("POST ERROR - ${map["status"]}");
+      }
+    } else {
+      debugPrint("POST ERROR - $response");
+    }
     return resp;
   }
 

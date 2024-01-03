@@ -29,7 +29,7 @@ class StudentsController {
 
   final isRunningSync = RxNotifier<bool>(false);
   final countSync = RxNotifier<int>(0);
-  final mapSync = RxNotifier<Map<String, Map<String, String>>>({});
+  //final mapSync = RxNotifier<Map<String, Map<String, String>>>({});
 
   late final ChamadaGsheetProvider chamadaGsheetProvider;
   late final ConfigStorage configStorage;
@@ -50,6 +50,7 @@ class StudentsController {
   }
 
   Future<bool> initController(Course course) async {
+    sync();
     countPresenteController.value = 0;
     studentsList.value = (await getStudents(course))
         .map((e) => StreamStudents(e, sortNameCourse: course.shortname))
@@ -84,10 +85,9 @@ class StudentsController {
   }
 
   Future<List<String>> geDateList(Course course) async {
-    List list = (await chamadaGsheetProvider.get(
-            table: course.shortname, userName: "Nome", date: ""))["Nome"]
-        .keys
-        .toList();
+    final aux = await chamadaGsheetProvider.get(
+        table: course.shortname, userName: "Nome", date: "");
+    List list = aux["Nome"].keys.toList();
     list = list.isEmpty ? [DateFormat('dd/MM').format(DateTime.now())] : list;
     dateSelected.value = list.last;
     return list.map((e) => e.toString()).toList();
@@ -115,20 +115,19 @@ class StudentsController {
       });
   }
 
-  void sync(Course course) async {
-    if (isRunningSync.value == false) {
-      Future.delayed(
-          const Duration(seconds: 0), () => isRunningSync.value = true);
+  void sync() async {
+    isRunningSync.value = true;
+    final (table, value) = await configStorage.getMapSync();
+    if (value.isNotEmpty) {
       await chamadaGsheetProvider.put(
-        table: course.shortname,
+        table: table,
         userName: '',
         date: '',
-        value: mapSync.value,
+        value: value, //mapSync.value,
       );
       countSync.value = 0;
-      mapSync.value = {};
-      Future.delayed(
-          const Duration(seconds: 0), () => isRunningSync.value = false);
+      configStorage.setMapSync("", {}); //mapSync.value = {};
     }
+    isRunningSync.value = false;
   }
 }

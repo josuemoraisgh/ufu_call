@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:ufu_call/app/utils/storage/config_storage.dart';
+import 'modules/students/provider/chamada_gsheet_provider.dart';
 import 'modules/students/students_module.dart';
 import 'modules/config/config_module.dart';
 import 'modules/info/info_module.dart';
@@ -18,6 +19,8 @@ class AppModule extends Module {
     i.addInstance<Dio>(Dio());
     i.addInstance<ConfigStorage>(ConfigStorage());
     i.addInstance<MoodleProvider>(MoodleProvider(providerHttp: i.get<Dio>()));
+    i.addInstance<ChamadaGsheetProvider>(
+        ChamadaGsheetProvider(provider: i.get<Dio>()));
   }
 
   @override

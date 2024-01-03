@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
+import 'package:intl/intl.dart';
 import 'package:rx_notifier/rx_notifier.dart';
 import '../../utils/models/course.dart';
 import 'modelsView/students_listview_silver.dart';
@@ -31,7 +32,7 @@ class _StudentsPageState extends State<StudentsPage> {
 
   @override
   void dispose() {
-    controller.sync(widget.course);
+    controller.sync();
     super.dispose();
   }
 
@@ -114,7 +115,7 @@ class _StudentsPageState extends State<StudentsPage> {
                   icon: controller.isRunningSync.value
                       ? const Center(child: CircularProgressIndicator())
                       : const Icon(Icons.sync),
-                  onPressed: () => controller.sync(widget.course),
+                  onPressed: () => controller.sync(),
                 ),
               ),
             ),
@@ -248,7 +249,7 @@ class _StudentsPageState extends State<StudentsPage> {
   }
 
   Future<bool> _insertData(BuildContext context) async {
-    String value = '';
+    String value = DateFormat('dd/MM').format(DateTime.now());
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -278,7 +279,8 @@ class _StudentsPageState extends State<StudentsPage> {
                 },
                 child: const Text("Salvar")),
           ],
-          content: TextField(
+          content: TextFormField(
+              initialValue: value,
               decoration: const InputDecoration(
                   border: UnderlineInputBorder(),
                   icon: Icon(Icons.date_range),
