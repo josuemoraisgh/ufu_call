@@ -17,8 +17,8 @@ class ChamadaGsheetProvider {
   Future<dynamic> sendGet(
       {required String table,
       required String func,
-      required String userName,
-      required String date}) async {
+      required String userId,
+      required String header}) async {
     while (_countConnection >= 10) {
       //so faz 10 requisições por vez.
       await Future.delayed(const Duration(milliseconds: 500));
@@ -29,8 +29,8 @@ class ChamadaGsheetProvider {
       queryParameters: {
         "table": table,
         "func": func,
-        "userName": userName,
-        "date": date,
+        "userId": userId,
+        "header": header,
       },
     );
     _countConnection--;
@@ -54,8 +54,6 @@ class ChamadaGsheetProvider {
   Future<dynamic> sendPost(
       {required String table,
       required String func,
-      required String userName,
-      required String date,
       dynamic value}) async {
     while (_countConnection >= 15) {
       //faz apenas 15 requisições por vez.
@@ -67,8 +65,6 @@ class ChamadaGsheetProvider {
       queryParameters: {
         "table": table,
         "func": func,
-        "userName": userName,
-        "date": date,
       },
       options: Options(
           followRedirects: false,
@@ -122,8 +118,6 @@ class ChamadaGsheetProvider {
     final resp = await sendPost(
       table: table,
       func: 'put',
-      userName: userName,
-      date: date,
       value: value,
     );
     return resp;
@@ -135,12 +129,12 @@ class ChamadaGsheetProvider {
 //3º Se variável date for vazio, retorna o JSON da linha de nome da tabela.
 //4º Se tem todas as variáveis, retorna o JSON "value" do item escolhido.
   Future<Map<String, dynamic>> get(
-      {required String table, String userName = "", String date = ""}) async {
+      {required String table, String userId = "", String header = ""}) async {
     final resp = await sendGet(
       table: table,
       func: 'get',
-      userName: userName,
-      date: date,
+      userId: userId,
+      header: header,
     );
     return resp;
   }
@@ -151,12 +145,12 @@ class ChamadaGsheetProvider {
 //3º Se variável date for vazio, limpa a linha de nome da tabela.
 //4º Se tem todas as variáveis, limpa um lugar específico.
   Future<bool> del(
-      {required String table, String userName = "", String date = ""}) async {
+      {required String table, String userId = "", String header = ""}) async {
     final resp = await sendGet(
       table: table,
       func: 'del',
-      userName: "",
-      date: date,
+      userId: "",
+      header: header,
     );
     return resp;
   }

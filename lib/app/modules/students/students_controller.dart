@@ -86,8 +86,8 @@ class StudentsController {
 
   Future<List<String>> geDateList(Course course) async {
     final aux = await chamadaGsheetProvider.get(
-        table: course.shortname, userName: "Nome", date: "");
-    List list = aux["Nome"].keys.toList();
+        table: course.shortname, userId: "id", header: "");
+    List list = aux["id"].keys.toList();
     list = list.isEmpty ? [DateFormat('dd/MM').format(DateTime.now())] : list;
     dateSelected.value = list.last;
     return list.map((e) => e.toString()).toList();
@@ -121,8 +121,6 @@ class StudentsController {
     if (value.isNotEmpty) {
       await chamadaGsheetProvider.put(
         table: table,
-        userName: '',
-        date: '',
         value: value, //mapSync.value,
       );
       countSync.value = 0;

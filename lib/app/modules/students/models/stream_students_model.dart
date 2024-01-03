@@ -104,12 +104,12 @@ class StreamStudents extends Students {
         () => controller.countPresenteController.value += value);
     if (isAtualiza) {
       var (_, mapSync) = await controller.configStorage.getMapSync();
-      if (mapSync['$firstname $lastname'] == null) {
-        mapSync['$firstname $lastname'] = {
+      if (mapSync['${id}_$firstname $lastname'] == null) {
+        mapSync['${id}_$firstname $lastname'] = {
           dateSelected: chamada![dateSelected]!
         };
       } else {
-        mapSync['$firstname $lastname']![dateSelected] =
+        mapSync['${id}_$firstname $lastname']![dateSelected] =
             chamada![dateSelected]!;
       }
       controller.configStorage.setMapSync(sortNameCourse, mapSync);
