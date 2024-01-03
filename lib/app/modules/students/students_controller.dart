@@ -68,7 +68,7 @@ class StudentsController {
     final values = await chamadaGsheetProvider.get(table: course.shortname);
     if (values.isNotEmpty && values[values.keys.first].containsKey(dateSelected.value)) {
       for (var e in studentsList.value) {
-        if (values['${e.firstname} ${e.lastname}']?[dateSelected.value] ==
+        if (values['${e.id}']?[dateSelected.value] ==
             "P") {
           e.insertChamadaFunc(dateSelected.value, isAtualiza: false);
         }
