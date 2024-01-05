@@ -48,7 +48,7 @@ class FaceDetectionService extends Disposable {
   //late IsolateInterpreter isolateInterpreter;
   late final FaceDetector faceDetector;
   //late SensorOrientationDetector orientation;
-  static const double threshold = 1.1;
+  final double threshold = 2.0;
 
   static const pontosdoModelo = 192; //512
   static const nomedoInterpreter =
@@ -109,7 +109,7 @@ class FaceDetectionService extends Disposable {
 
   Future<void> predict(
       CameraImage cameraImage,
-      int rotation,
+      CameraDescription camera,
       List<StreamStudents> assistidos,
       RxNotifier<List<StreamStudents>> assistidoProvavel) async {
     await faceCompleter.future;
@@ -118,10 +118,9 @@ class FaceDetectionService extends Disposable {
     double min = 2.0;
     Map<int, List<List<double>>> outputs = {};
     int i = 0, j = 0, k = 0;
-    imglib.Image image =
-        convertCameraImageToImageWithRotate(cameraImage, rotation);
+    imglib.Image image = imgLibImageFromCameraImage(cameraImage);
     InputImage? inputImage =
-        await convertCameraImageToInputImageWithRotate(cameraImage, rotation);
+        await inputImageFromCameraImage(cameraImage, camera);
     if (inputImage != null) {
       final List<Face> facesDetected =
           await faceDetector.processImage(inputImage);
@@ -180,7 +179,7 @@ class FaceDetectionService extends Disposable {
       //final uint8List = Uint8List.fromList(imglib.encodeJpg(imageResized));
       //final img2 = imglib.decodeJpg(uint8List);
       //if (img2 != null) {
-      Float32List imageAsList = imageByteToFloat32Normal(imageResized);
+      Float32List imageAsList = float32ListFromImgLibImage(imageResized);
       return imageAsList;
       //}
     }

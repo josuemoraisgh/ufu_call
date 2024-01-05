@@ -171,7 +171,7 @@ class _StudentsPageState extends State<StudentsPage> {
           SpeedDialChild(
             child: const Icon(Icons.collections),
             backgroundColor: Colors.red,
-            label: 'Chamada por Image',
+            label: 'Face Detection',
             labelStyle: const TextStyle(fontSize: 18.0),
             onTap: () {
               controller.faceDetector.value = !controller.faceDetector.value;
@@ -180,7 +180,7 @@ class _StudentsPageState extends State<StudentsPage> {
           SpeedDialChild(
               child: const Icon(Icons.add_box),
               backgroundColor: Colors.blue,
-              label: 'Tipo da Chamada',
+              label: 'Insert Date',
               labelStyle: const TextStyle(fontSize: 18.0),
               onTap: () async {
                 controller.whatWidget.value = 0;
@@ -192,7 +192,7 @@ class _StudentsPageState extends State<StudentsPage> {
               Icons.search,
             ),
             backgroundColor: Colors.yellow,
-            label: 'Procurar',
+            label: 'Find User',
             labelStyle: const TextStyle(fontSize: 18.0),
             onTap: () {
               controller.whatWidget.value = 1;

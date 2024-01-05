@@ -24,7 +24,8 @@ class StudentsModule extends Module {
         faceDetectionService: FaceDetectionService(
           faceDetector: FaceDetector(
             options: FaceDetectorOptions(
-                performanceMode: FaceDetectorMode.accurate,
+                minFaceSize: 0.01,
+                performanceMode: FaceDetectorMode.fast,
                 enableContours: true),
           ),
         ),

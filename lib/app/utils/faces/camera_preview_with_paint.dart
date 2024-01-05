@@ -6,11 +6,10 @@ import 'camera_controle_service.dart';
 
 class CameraPreviewWithPaint extends StatefulWidget {
   final CameraService? cameraService;
-  final Future<void> Function(CameraImage cameraImage, int sensorOrientation,
-      Orientation orientation)? onPaintLiveImageFunc;
+  final Future<void> Function(
+      CameraImage cameraImage, CameraDescription camera)? onPaintLiveImageFunc;
   final Future<void> Function(Uint8List? uint8ListImage)? takeImageFunc;
   final dynamic Function()? switchLiveCameraFunc;
-  final CameraLensDirection initialDirection;
   final bool isRealTime;
   final StackFit? stackFit;
   final CustomPaint? customPaint;
@@ -22,7 +21,6 @@ class CameraPreviewWithPaint extends StatefulWidget {
     this.takeImageFunc,
     this.switchLiveCameraFunc,
     this.stackFit,
-    this.initialDirection = CameraLensDirection.back,
     this.isRealTime = false,
   });
   @override
@@ -32,13 +30,13 @@ class CameraPreviewWithPaint extends StatefulWidget {
 class _CameraPreviewWithPaintState extends State<CameraPreviewWithPaint> {
   double zoomLevel = 0.0, minZoomLevel = 0.0, maxZoomLevel = 0.0;
   bool _changingCameraLens = false;
-  Orientation _orientation = Orientation.portrait;
+  //Orientation _orientation = Orientation.portrait;
   late CameraService _cameraService;
   late Future<bool> isStarted; //Não retirar muito importante
 
   Future<bool> init() async {
     _cameraService = widget.cameraService ?? CameraService();
-    await _startLiveFeed(widget.initialDirection);
+    await _startLiveFeed(_cameraService.camera!.lensDirection);
     return true;
   }
 
@@ -64,7 +62,7 @@ class _CameraPreviewWithPaintState extends State<CameraPreviewWithPaint> {
           if ((_cameraService.camera != null) &&
               (snapshot.hasData) &&
               (_cameraService.cameraController!.value.isInitialized)) {
-            _orientation = MediaQuery.of(context).orientation;
+            //_orientation = MediaQuery.of(context).orientation;
             return Stack(
               fit: widget.stackFit ?? StackFit.passthrough,
               children: <Widget>[
@@ -79,6 +77,50 @@ class _CameraPreviewWithPaintState extends State<CameraPreviewWithPaint> {
                   left: 0,
                   right: 0,
                   child: _floatingActionButton(),
+                ),
+                Positioned(
+                  bottom: 0,
+                  left: 0,
+                  child: RotatedBox(
+                    quarterTurns: 1,
+                    child: Slider(
+                      value: zoomLevel,
+                      min: minZoomLevel,
+                      max: maxZoomLevel,
+                      onChanged: (newSliderValue) {
+                        setState(() {
+                          zoomLevel = newSliderValue;
+                          _cameraService.cameraController!
+                              .setZoomLevel(zoomLevel);
+                        });
+                      },
+                      divisions: (maxZoomLevel - 1).toInt() < 1
+                          ? null
+                          : (maxZoomLevel - 1).toInt(),
+                    ),
+                  ),
+                ),
+                Positioned(
+                  bottom: 0,
+                  right: 0,
+                  child: RotatedBox(
+                    quarterTurns: 1,
+                    child: Slider(
+                      value: zoomLevel,
+                      min: minZoomLevel,
+                      max: maxZoomLevel,
+                      onChanged: (newSliderValue) {
+                        setState(() {
+                          zoomLevel = newSliderValue;
+                          _cameraService.cameraController!
+                              .setZoomLevel(zoomLevel);
+                        });
+                      },
+                      divisions: (maxZoomLevel - 1).toInt() < 1
+                          ? null
+                          : (maxZoomLevel - 1).toInt(),
+                    ),
+                  ),
                 ),
               ],
             );
@@ -96,13 +138,14 @@ class _CameraPreviewWithPaintState extends State<CameraPreviewWithPaint> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Align(
-              alignment: Alignment.topLeft,
+              alignment: Alignment.topCenter,
               child: ElevatedButton(
                 onPressed: () {
                   _cameraTakeImage();
                 },
                 child: Icon(
-                  (widget.initialDirection == CameraLensDirection.back)
+                  (_cameraService.camera!.lensDirection ==
+                          CameraLensDirection.back)
                       ? Icons.photo_camera_back
                       : Icons.photo_camera_front,
                   size: 40,
@@ -122,21 +165,6 @@ class _CameraPreviewWithPaintState extends State<CameraPreviewWithPaint> {
               ),
             ),
           ],
-        ),
-        const SizedBox(width: 24.0),
-        Slider(
-          value: zoomLevel,
-          min: minZoomLevel,
-          max: maxZoomLevel,
-          onChanged: (newSliderValue) {
-            setState(() {
-              zoomLevel = newSliderValue;
-              _cameraService.cameraController!.setZoomLevel(zoomLevel);
-            });
-          },
-          divisions: (maxZoomLevel - 1).toInt() < 1
-              ? null
-              : (maxZoomLevel - 1).toInt(),
         ),
       ],
     );
@@ -160,8 +188,7 @@ class _CameraPreviewWithPaintState extends State<CameraPreviewWithPaint> {
           });
           if (widget.onPaintLiveImageFunc != null) {
             _cameraService.cameraController?.startImageStream((cameraImage) {
-              widget.onPaintLiveImageFunc!(cameraImage,
-                  _cameraService.camera!.sensorOrientation, _orientation);
+              widget.onPaintLiveImageFunc!(cameraImage, _cameraService.camera!);
             });
           }
           setState(() {});
