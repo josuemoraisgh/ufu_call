@@ -60,10 +60,7 @@ class StreamStudents extends Students {
       if (_uint8ListImage?.isNotEmpty ?? false) {
         final image = imglib.decodeImage(_uint8ListImage!);
         if (image != null) {
-          final inputImage = inputImageFromImgLibImage(image);
-          //final imageLib = imgLibImageFromInputImage(inputImage);
-          //_uint8ListImage = imglib.encodeIco(imageLib);
-
+          final inputImage = await inputImageFromImgLibImage(image);
           final faces = await controller.faceDetectionService.faceDetector
               .processImage(inputImage);
           if (faces.isNotEmpty) {

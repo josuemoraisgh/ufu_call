@@ -4,6 +4,7 @@ import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
 import 'package:image/image.dart' as imglib;
 import 'package:camera/camera.dart';
 import 'package:flutter/services.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:ufu_call/app/utils/faces/camera_controle_service.dart';
 
 final _orientations = {
@@ -76,6 +77,45 @@ InputImage? inputImageFromCameraImage(
   );
 }
 
+Uint8List encodeYUV420(imglib.Image image) {
+  Uint8List aRGB = image.data!.toUint8List();
+  int width = image.width;
+  int height = image.height;
+  int frameSize = width * height;
+  int chromasize = frameSize ~/ 4;
+
+  int yIndex = 0;
+  int uIndex = frameSize;
+  int vIndex = frameSize + chromasize;
+  Uint8List yuv =
+      Uint8List.fromList(List<int>.filled(width * height * 3 ~/ 2, 0));
+
+  //int a,
+  int R, G, B, Y, U, V;
+  int index = 0;
+  for (int j = 0; j < height; j++) {
+    for (int i = 0; i < width; i++) {
+      //a = (aRGB[index] & 0xff000000) >> 24; //not using it right now
+      R = (aRGB[index] & 0xff0000) >> 16;
+      G = (aRGB[index] & 0xff00) >> 8;
+      B = (aRGB[index] & 0xff) >> 0;
+
+      Y = ((66 * R + 129 * G + 25 * B + 128) >> 8) + 16;
+      U = ((-38 * R - 74 * G + 112 * B + 128) >> 8) + 128;
+      V = ((112 * R - 94 * G - 18 * B + 128) >> 8) + 128;
+
+      yuv[yIndex++] = ((Y < 0) ? 0 : ((Y > 255) ? 255 : Y));
+
+      if (j % 2 == 0 && index % 2 == 0) {
+        yuv[vIndex++] = ((U < 0) ? 0 : ((U > 255) ? 255 : U));
+        yuv[uIndex++] = ((V < 0) ? 0 : ((V > 255) ? 255 : V));
+      }
+      index++;
+    }
+  }
+  return yuv;
+}
+
 Uint8List encodeNV21(imglib.Image image) {
   Uint8List argb = image.data!.toUint8List();
   int width = image.width;
@@ -120,16 +160,23 @@ Uint8List encodeNV21(imglib.Image image) {
   return Uint8List.fromList(nv21);
 }
 
-InputImage inputImageFromImgLibImage(imglib.Image image) {
+Future<InputImage> inputImageFromImgLibImage(imglib.Image image) async {
   late final Uint8List bytes;
   late final InputImageMetadata metadata;
   if (Platform.isAndroid) {
-    bytes = encodeNV21(image);
+    /*
+    bytes = encodeYUV420(image); //encodeNV21(image);
     metadata = InputImageMetadata(
-        format: InputImageFormat.nv21,
+        format: InputImageFormat.yuv420, //InputImageFormat.nv21,
         size: Size(image.width.toDouble(), image.height.toDouble()),
         rotation: InputImageRotation.rotation0deg,
-        bytesPerRow: 0); // ignored
+        bytesPerRow: 0); // ignored*/
+    bytes = imglib.encodeJpg(image);
+    final directory = await getApplicationDocumentsDirectory();
+    final file = File('${directory.path}/aux.jpg')
+      ..writeAsBytesSync(List<int>.from(bytes),
+          mode: FileMode.writeOnly, flush: true);
+    return InputImage.fromFile(file);
   } else {
     bytes = image.buffer.asUint8List();
     metadata = InputImageMetadata(
@@ -215,11 +262,7 @@ imglib.Image imgLibImageFromCameraImageNV21(CameraImage cameraImage) {
   final width = cameraImage.width.toInt();
   final height = cameraImage.height.toInt();
 
-  final WriteBuffer allBytes = WriteBuffer();
-  for (final Plane plane in cameraImage.planes) {
-    allBytes.putUint8List(plane.bytes);
-  }
-  final yuv420sp = allBytes.done().buffer.asUint8List();
+  final yuv420sp = cameraImage.planes[0].bytes;
   //int total = width * height;
   //Uint8List rgb = Uint8List(total);
   final outImg =
