@@ -153,52 +153,56 @@ class _StudentsPageState extends State<StudentsPage> {
               ),
       );
 
-  Widget customFloatingActionButton(BuildContext context) => SpeedDial(
-        animatedIcon: AnimatedIcons.menu_close,
-        animatedIconTheme: const IconThemeData(size: 22.0),
-        visible: true,
-        closeManually: false,
-        curve: Curves.bounceIn,
-        overlayColor: Colors.black,
-        overlayOpacity: 0.5,
-        tooltip: 'Opções',
-        heroTag: 'Seleciona Opções Diversas',
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
-        elevation: 8.0,
-        shape: const CircleBorder(),
-        children: [
-          SpeedDialChild(
-            child: const Icon(Icons.collections),
-            backgroundColor: Colors.red,
-            label: 'Face Detection',
-            labelStyle: const TextStyle(fontSize: 18.0),
-            onTap: () {
-              controller.faceDetector.value = !controller.faceDetector.value;
-            },
-          ),
-          SpeedDialChild(
-              child: const Icon(Icons.add_box),
-              backgroundColor: Colors.blue,
-              label: 'Insert Date',
+  Widget customFloatingActionButton(BuildContext context) => RxBuilder(
+        builder: (BuildContext context) => SpeedDial(
+          animatedIcon: AnimatedIcons.menu_close,
+          animatedIconTheme: const IconThemeData(size: 22.0),
+          visible: true,
+          closeManually: false,
+          curve: Curves.bounceIn,
+          overlayColor: Colors.black,
+          overlayOpacity: 0.5,
+          tooltip: 'Opções',
+          heroTag: 'Seleciona Opções Diversas',
+          backgroundColor: Colors.white,
+          foregroundColor: Colors.black,
+          elevation: 8.0,
+          shape: const CircleBorder(),
+          children: [
+            SpeedDialChild(
+              child: const Icon(Icons.collections),
+              backgroundColor: Colors.red,
+              label: controller.faceDetector.value
+                  ? 'User List'
+                  : 'Face Detection',
               labelStyle: const TextStyle(fontSize: 18.0),
-              onTap: () async {
-                controller.whatWidget.value = 0;
-                await _checkDate(context);
-                setState(() {});
-              }),
-          SpeedDialChild(
-            child: const Icon(
-              Icons.search,
+              onTap: () {
+                controller.faceDetector.value = !controller.faceDetector.value;
+              },
             ),
-            backgroundColor: Colors.yellow,
-            label: 'Find User',
-            labelStyle: const TextStyle(fontSize: 18.0),
-            onTap: () {
-              controller.whatWidget.value = 1;
-            },
-          ),
-        ],
+            SpeedDialChild(
+                child: const Icon(Icons.add_box),
+                backgroundColor: Colors.blue,
+                label: 'Insert Date',
+                labelStyle: const TextStyle(fontSize: 18.0),
+                onTap: () async {
+                  controller.whatWidget.value = 0;
+                  await _checkDate(context);
+                  setState(() {});
+                }),
+            SpeedDialChild(
+              child: const Icon(
+                Icons.search,
+              ),
+              backgroundColor: Colors.yellow,
+              label: 'Find User',
+              labelStyle: const TextStyle(fontSize: 18.0),
+              onTap: () {
+                controller.whatWidget.value = 1;
+              },
+            ),
+          ],
+        ),
       );
 
   Future<bool> _checkDate(BuildContext context) async {

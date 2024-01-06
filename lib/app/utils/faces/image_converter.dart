@@ -4,6 +4,7 @@ import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
 import 'package:image/image.dart' as imglib;
 import 'package:camera/camera.dart';
 import 'package:flutter/services.dart';
+import 'package:ufu_call/app/utils/faces/camera_controle_service.dart';
 
 final _orientations = {
   DeviceOrientation.portraitUp: 0,
@@ -12,32 +13,26 @@ final _orientations = {
   DeviceOrientation.landscapeRight: 270,
 };
 
-Future<InputImage?> inputImageFromCameraImage(
-    CameraImage image, CameraDescription camera) async {
+InputImage? inputImageFromCameraImage(
+    CameraImage cameraImage, CameraService cameraService) {
   // get image rotation
   // it is used in android to convert the InputImage from Dart to Java
   // `rotation` is not used in iOS to convert the InputImage from Dart to Obj-C
   // in both platforms `rotation` and `camera.lensDirection` can be used to compensate `x` and `y` coordinates on a canvas
   //final camera = (await availableCameras())[0];
-  final sensorOrientation = camera.sensorOrientation;
-
-  final controller = CameraController(
-    camera,
-    ResolutionPreset.max,
-    enableAudio: false,
-    imageFormatGroup: Platform.isAndroid
-        ? ImageFormatGroup.nv21 // for Android
-        : ImageFormatGroup.bgra8888, // for iOS
-  );
+  if (cameraService.camera == null || cameraService.cameraController == null) {
+    return null;
+  }
+  final sensorOrientation = cameraService.camera!.sensorOrientation;
 
   InputImageRotation? rotation;
   if (Platform.isIOS) {
     rotation = InputImageRotationValue.fromRawValue(sensorOrientation);
   } else if (Platform.isAndroid) {
     var rotationCompensation =
-        _orientations[controller.value.deviceOrientation];
+        _orientations[cameraService.cameraController?.value.deviceOrientation];
     if (rotationCompensation == null) return null;
-    if (camera.lensDirection == CameraLensDirection.front) {
+    if (cameraService.camera?.lensDirection == CameraLensDirection.front) {
       // front-facing
       rotationCompensation = (sensorOrientation + rotationCompensation) % 360;
     } else {
@@ -50,27 +45,33 @@ Future<InputImage?> inputImageFromCameraImage(
   if (rotation == null) return null;
 
   // get image format
-  final format = InputImageFormatValue.fromRawValue(image.format.raw);
+  final format = InputImageFormatValue.fromRawValue(cameraImage.format.raw);
   // validate format depending on platform
   // only supported formats:
   // * nv21 for Android
   // * bgra8888 for iOS
-  if (format == null ||
-      (Platform.isAndroid && format != InputImageFormat.nv21) ||
-      (Platform.isIOS && format != InputImageFormat.bgra8888)) return null;
-
   // since format is constraint to nv21 or bgra8888, both only have one plane
-  if (image.planes.length != 1) return null;
-  final plane = image.planes.first;
+  if (format == null ||
+      ((cameraImage.planes.length != 1) &&
+          ((Platform.isAndroid && format == InputImageFormat.nv21) ||
+              (Platform.isIOS && format == InputImageFormat.bgra8888)))) {
+    return null;
+  }
+
+  final WriteBuffer allBytes = WriteBuffer();
+  for (final Plane plane in cameraImage.planes) {
+    allBytes.putUint8List(plane.bytes);
+  }
+  final bytes = allBytes.done().buffer.asUint8List();
 
   // compose InputImage using bytes
   return InputImage.fromBytes(
-    bytes: plane.bytes,
+    bytes: bytes,
     metadata: InputImageMetadata(
-      size: Size(image.width.toDouble(), image.height.toDouble()),
+      size: Size(cameraImage.width.toDouble(), cameraImage.height.toDouble()),
       rotation: rotation, // used only in Android
       format: format, // used only in iOS
-      bytesPerRow: plane.bytesPerRow, // used only in iOS
+      bytesPerRow: cameraImage.planes[0].bytesPerRow, // used only in iOS
     ),
   );
 }
@@ -95,9 +96,9 @@ Uint8List encodeNV21(imglib.Image image) {
       //           A   B   G   R
       //           A   R   G   B
       //a = (argb[index] & 0xff000000) >> 24; // a is not used obviously
-      B = (argb[index] & 0xff0000) >> 16;
-      G = (argb[index] & 0xff00) >> 8;
-      R = (argb[index] & 0xff) >> 0;
+      R = (argb[index] & 0xff0000) >> 16;
+      G = (argb[index] & 0x00ff00) >> 8;
+      B = (argb[index] & 0x0000ff) >> 0;
 
       // well known BGR ou RGB to YUV algorithm
       Y = ((66 * R + 129 * G + 25 * B + 128) >> 8) + 16;
@@ -108,7 +109,7 @@ Uint8List encodeNV21(imglib.Image image) {
         meaning for every 4 Y pixels there are 1 V and 1 U.
         Note the sampling is every otherpixel AND every other scanline.*/
       nv21[yIndex++] = ((Y < 0) ? 0 : ((Y > 255) ? 255 : Y));
-      if (j % 2 == 0 && index % 2 == 0) {
+      if (j % 2 == 0 && index % 2 == 0 && j != 0 && index != 0) {
         nv21[uvIndex++] = ((V < 0) ? 0 : ((V > 255) ? 255 : V));
         nv21[uvIndex++] = ((U < 0) ? 0 : ((U > 255) ? 255 : U));
       }
@@ -120,44 +121,43 @@ Uint8List encodeNV21(imglib.Image image) {
 }
 
 InputImage inputImageFromImgLibImage(imglib.Image image) {
-  final bytes = encodeNV21(image);
-  final metadata = InputImageMetadata(
-      format: Platform.isAndroid
-          ? InputImageFormat.nv21
-          : InputImageFormat.bgra8888,
-      size: Size(image.width.toDouble(), image.height.toDouble()),
-      rotation: InputImageRotation.rotation0deg,
-      bytesPerRow: Platform.isAndroid ? 0 : 28); // ignored
-
+  late final Uint8List bytes;
+  late final InputImageMetadata metadata;
+  if (Platform.isAndroid) {
+    bytes = encodeNV21(image);
+    metadata = InputImageMetadata(
+        format: InputImageFormat.nv21,
+        size: Size(image.width.toDouble(), image.height.toDouble()),
+        rotation: InputImageRotation.rotation0deg,
+        bytesPerRow: 0); // ignored
+  } else {
+    bytes = image.buffer.asUint8List();
+    metadata = InputImageMetadata(
+        format: InputImageFormat.bgra8888,
+        size: Size(image.width.toDouble(), image.height.toDouble()),
+        rotation: InputImageRotation.rotation0deg,
+        bytesPerRow: 28); // ignored
+  }
   return InputImage.fromBytes(bytes: bytes, metadata: metadata);
 }
 
 ///
 /// Converts a [CameraImage] in YUV420 format to [image_lib.Image] in RGB format
 ///
-imglib.Image imgLibImageFromCameraImage(CameraImage cameraImage) {
-  if (cameraImage.format.group == ImageFormatGroup.yuv420) {
-    return imgLibImageFromCameraImageYUV420(cameraImage);
-  } else if (cameraImage.format.group == ImageFormatGroup.bgra8888) {
-    return imgLibImageFromCameraImageBGRA8888(cameraImage);
-  } else {
-    throw Exception('Undefined image type.');
-  }
-}
-
-///
-/// Converts a [CameraImage] in BGRA888 format to [image_lib.Image] in RGB format
-///
-imglib.Image imgLibImageFromCameraImageBGRA8888(CameraImage cameraImage) {
-  // ignore: constant_identifier_names
-  const IOS_BYTES_OFFSET = 28;
-  return imglib.Image.fromBytes(
-    width: cameraImage.planes[0].width!,
-    height: cameraImage.planes[0].height!,
-    bytes: cameraImage.planes[0].bytes.buffer,
-    bytesOffset: IOS_BYTES_OFFSET,
-    order: imglib.ChannelOrder.bgra,
-  );
+imglib.Image? imgLibImageFromCameraImage(
+    CameraImage cameraImage, CameraService cameraService) {
+  return switch (cameraImage.format.group) {
+    ImageFormatGroup.bgra8888 => imglib.Image.fromBytes(
+        width: cameraImage.planes[0].width!,
+        height: cameraImage.planes[0].height!,
+        bytes: cameraImage.planes[0].bytes.buffer,
+        bytesOffset: 28,
+        order: imglib.ChannelOrder.bgra,
+      ),
+    ImageFormatGroup.yuv420 => imgLibImageFromCameraImageYUV420(cameraImage),
+    ImageFormatGroup.nv21 => imgLibImageFromCameraImageNV21(cameraImage),
+    _ => null,
+  };
 }
 
 ///
@@ -184,22 +184,17 @@ imglib.Image imgLibImageFromCameraImageYUV420(CameraImage cameraImage) {
 
     for (int w = 0; w < imageWidth; w++) {
       int uvw = (w / 2).floor();
-
       final yIndex = (h * yRowStride) + (w * yPixelStride);
-
       // Y plane should have positive values belonging to [0...255]
       final int y = yBuffer[yIndex];
-
       // U/V Values are subsampled i.e. each pixel in U/V chanel in a
       // YUV_420 image act as chroma value for 4 neighbouring pixels
       final int uvIndex = (uvh * uvRowStride) + (uvw * uvPixelStride);
-
       // U/V values ideally fall under [-0.5, 0.5] range. To fit them into
       // [0, 255] range they are scaled up and centered to 128.
       // Operation below brings U/V values to [-128, 127].
       final int u = uBuffer[uvIndex];
       final int v = vBuffer[uvIndex];
-
       // Compute RGB values per formula above.
       int r = (y + v * 1436 / 1024 - 179).round();
       int g = (y - u * 46549 / 131072 + 44 - v * 93604 / 131072 + 91).round();
@@ -216,11 +211,15 @@ imglib.Image imgLibImageFromCameraImageYUV420(CameraImage cameraImage) {
   return image;
 }
 
-imglib.Image imgLibImageFromInputImage(InputImage image) {
-  final width = image.metadata!.size.width.toInt();
-  final height = image.metadata!.size.height.toInt();
+imglib.Image imgLibImageFromCameraImageNV21(CameraImage cameraImage) {
+  final width = cameraImage.width.toInt();
+  final height = cameraImage.height.toInt();
 
-  Uint8List yuv420sp = image.bytes!;
+  final WriteBuffer allBytes = WriteBuffer();
+  for (final Plane plane in cameraImage.planes) {
+    allBytes.putUint8List(plane.bytes);
+  }
+  final yuv420sp = allBytes.done().buffer.asUint8List();
   //int total = width * height;
   //Uint8List rgb = Uint8List(total);
   final outImg =
@@ -266,10 +265,11 @@ imglib.Image imgLibImageFromInputImage(InputImage image) {
 
       /*rgb[yp] = 0xff000000 |
             ((r << 6) & 0xff0000) |
-            ((g >> 2) & 0xff00) |
-            ((b >> 10) & 0xff);*/
+            ((g >> 2) & 0x00ff00) |
+           ((b >> 10) & 0x0000ff);*/
     }
   }
+  //final rotatedImage = imglib.copyRotate(outImg, angle: cameraImage..rotation.rawValue);
   return outImg;
 }
 
@@ -298,22 +298,6 @@ imglib.Image? cropFace(imglib.Image image, Face faceDetected, {int step = 10}) {
   final imageResp = imglib.copyCrop(image,
       x: x.round(), y: y.round(), width: w.round(), height: h.round());
   return imglib.decodeJpg(imglib.encodeJpg(imageResp));
-}
-
-Float32List listFloat32FromImgLibImage(imglib.Image image) {
-  var convertedBytes = Float32List(1 * 112 * 112 * 3);
-  var buffer = Float32List.view(convertedBytes.buffer);
-  int pixelIndex = 0;
-
-  for (var i = 0; i < 112; i++) {
-    for (var j = 0; j < 112; j++) {
-      var pixel = image.getPixelSafe(j, i);
-      buffer[pixelIndex++] = (pixel.r - 128) / 128;
-      buffer[pixelIndex++] = (pixel.g - 128) / 128;
-      buffer[pixelIndex++] = (pixel.b - 128) / 128;
-    }
-  }
-  return convertedBytes.buffer.asFloat32List();
 }
 
 Float32List float32ListFromImgLibImage(imglib.Image imageResized) {

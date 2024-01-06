@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import '../../../utils/constants.dart';
@@ -53,35 +54,35 @@ class StreamStudents extends Students {
     if ((photoName.isNotEmpty) && (photoName.contains("?rev="))) {
       final url =
           '${photoName.replaceFirst(APIConstants.API_BASE_URL, "${APIConstants.API_BASE_URL}webservice/")}&token=${token.token}';
-      final uint8ListImageAux =
-          (await NetworkAssetBundle(Uri.parse(url)).load(url))
-              .buffer
-              .asUint8List();
-      if (uint8ListImageAux.isNotEmpty) {
-        final image = imglib.decodeImage(uint8ListImageAux);
+      _uint8ListImage = (await NetworkAssetBundle(Uri.parse(url)).load(url))
+          .buffer
+          .asUint8List();
+      if (_uint8ListImage?.isNotEmpty ?? false) {
+        final image = imglib.decodeImage(_uint8ListImage!);
         if (image != null) {
           final inputImage = inputImageFromImgLibImage(image);
-          final imageLib = imgLibImageFromInputImage(inputImage);
-          _uint8ListImage = imglib.encodeIco(imageLib);
+          //final imageLib = imgLibImageFromInputImage(inputImage);
+          //_uint8ListImage = imglib.encodeIco(imageLib);
 
-          //final faces = await controller.faceDetectionService.faceDetector.processImage(inputImage);
-          //if (faces.isNotEmpty) {
-          //  imglib.Image? croppedImage = cropFace(image, faces[0]);
-          //  if (croppedImage != null) {
-          //    _uint8ListImage = imglib.encodePng(croppedImage);
-          //    imglib.copyResize(croppedImage, width: 120);
-          //    imglib.Image imageResized = imglib.copyResizeCropSquare(
-          //        croppedImage,
-          //        size: 112,
-          //        interpolation: imglib.Interpolation.linear);
-          //    try {
-          //      fotoPoints = (await controller.faceDetectionService
-          //          .classificatorImage(imageResized));
-          //    } catch (e) {
-          //      debugPrint(e.toString());
-          //    }
-          //  }
-          //}
+          final faces = await controller.faceDetectionService.faceDetector
+              .processImage(inputImage);
+          if (faces.isNotEmpty) {
+            imglib.Image? croppedImage = cropFace(image, faces[0]);
+            if (croppedImage != null) {
+              _uint8ListImage = imglib.encodePng(croppedImage);
+              imglib.copyResize(croppedImage, width: 120);
+              imglib.Image imageResized = imglib.copyResizeCropSquare(
+                  croppedImage,
+                  size: 112,
+                  interpolation: imglib.Interpolation.linear);
+              try {
+                fotoPoints = (await controller.faceDetectionService
+                    .classificatorImage(imageResized));
+              } catch (e) {
+                debugPrint(e.toString());
+              }
+            }
+          }
         }
       }
     }

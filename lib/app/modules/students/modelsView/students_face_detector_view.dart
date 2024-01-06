@@ -55,13 +55,13 @@ class _StudentsFaceDetectorViewState extends State<StudentsFaceDetectorView> {
       builder: (BuildContext context, AsyncSnapshot<bool> initCameras) {
         if (initCameras.data != null) {
           return CameraPreviewWithPaint(
-            cameraService: _cameraService,
-            customPaint: _customPaint,
-            onPaintLiveImageFunc: _processImage,
-            takeImageFunc: _cameraTakeImage,
-            isRealTime: widget.studentsList != null,
-            stackFit: widget.stackFit,
-          );
+              cameraService: _cameraService,
+              customPaint: _customPaint,
+              onPaintLiveImageFunc: _processImage,
+              takeImageFunc: _cameraTakeImage,
+              isRealTime: widget.studentsList != null,
+              stackFit: widget.stackFit,
+              threshold: faceDetectionService.threshold);
         }
         return const Center(child: CircularProgressIndicator());
       },
@@ -76,21 +76,17 @@ class _StudentsFaceDetectorViewState extends State<StudentsFaceDetectorView> {
         if (faces!.length > 1) {
           debugPrint("duas faces");
         }
-        await faceDetectionService.predict(
-            cameraImage!,
-            _cameraService!.camera!,
-            widget.studentsList!,
-            widget.studentsProvavel!);
+        await faceDetectionService.predict(cameraImage!, _cameraService!,
+            widget.studentsList!, widget.studentsProvavel!);
       }
     }
   }
 
-  Future<void> _processImage(
-      CameraImage cameraImage, CameraDescription camera) async {
+  Future<void> _processImage(CameraImage cameraImage) async {
     this.cameraImage = cameraImage;
     //final rotation = getImageRotation(sensorOrientation, orientation);
     InputImage? inputImage =
-        await inputImageFromCameraImage(cameraImage, camera);
+        inputImageFromCameraImage(cameraImage, _cameraService!);
     if (inputImage == null || !_canProcess || _isBusy) return;
     _isBusy = true;
     faces = await faceDetectionService.faceDetector.processImage(inputImage);
@@ -102,7 +98,7 @@ class _StudentsFaceDetectorViewState extends State<StudentsFaceDetectorView> {
     if (inputImage.metadata?.size != null &&
         inputImage.metadata?.rotation != null) {
       final painter = FaceDetectorPainter(faces!, inputImage.metadata!.size,
-          inputImage.metadata!.rotation, camera.lensDirection);
+          inputImage.metadata!.rotation, _cameraService!.camera!.lensDirection);
       _customPaint = CustomPaint(painter: painter);
     }
     _isBusy = false;
@@ -113,8 +109,11 @@ class _StudentsFaceDetectorViewState extends State<StudentsFaceDetectorView> {
           if (widget.studentsList != null) {
             if ((_isFace == true)) {
               _isFace = false;
-              _cameraTakeImage(
-                  imglib.encodeJpg(imgLibImageFromCameraImage(cameraImage)));
+              final image =
+                  imgLibImageFromCameraImage(cameraImage, _cameraService!);
+              if (image != null) {
+                _cameraTakeImage(imglib.encodeJpg(image));
+              }
             }
           }
         },

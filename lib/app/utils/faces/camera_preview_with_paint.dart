@@ -2,17 +2,18 @@ import 'dart:io';
 import 'dart:typed_data';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
+import 'package:rx_notifier/rx_notifier.dart';
 import 'camera_controle_service.dart';
 
 class CameraPreviewWithPaint extends StatefulWidget {
   final CameraService? cameraService;
-  final Future<void> Function(
-      CameraImage cameraImage, CameraDescription camera)? onPaintLiveImageFunc;
+  final Future<void> Function(CameraImage cameraImage)? onPaintLiveImageFunc;
   final Future<void> Function(Uint8List? uint8ListImage)? takeImageFunc;
   final dynamic Function()? switchLiveCameraFunc;
   final bool isRealTime;
   final StackFit? stackFit;
   final CustomPaint? customPaint;
+  final RxNotifier<double>? threshold;
   const CameraPreviewWithPaint({
     super.key,
     required this.cameraService,
@@ -22,6 +23,7 @@ class CameraPreviewWithPaint extends StatefulWidget {
     this.switchLiveCameraFunc,
     this.stackFit,
     this.isRealTime = false,
+    this.threshold,
   });
   @override
   State<CameraPreviewWithPaint> createState() => _CameraPreviewWithPaintState();
@@ -36,7 +38,7 @@ class _CameraPreviewWithPaintState extends State<CameraPreviewWithPaint> {
 
   Future<bool> init() async {
     _cameraService = widget.cameraService ?? CameraService();
-    await _startLiveFeed(_cameraService.camera!.lensDirection);
+    await _startLiveFeed(CameraLensDirection.back);
     return true;
   }
 
@@ -100,28 +102,26 @@ class _CameraPreviewWithPaintState extends State<CameraPreviewWithPaint> {
                     ),
                   ),
                 ),
-                Positioned(
-                  bottom: 0,
-                  right: 0,
-                  child: RotatedBox(
-                    quarterTurns: 1,
-                    child: Slider(
-                      value: zoomLevel,
-                      min: minZoomLevel,
-                      max: maxZoomLevel,
-                      onChanged: (newSliderValue) {
-                        setState(() {
-                          zoomLevel = newSliderValue;
-                          _cameraService.cameraController!
-                              .setZoomLevel(zoomLevel);
-                        });
-                      },
-                      divisions: (maxZoomLevel - 1).toInt() < 1
-                          ? null
-                          : (maxZoomLevel - 1).toInt(),
+                if (widget.threshold != null)
+                  Positioned(
+                    bottom: 0,
+                    right: 0,
+                    child: RotatedBox(
+                      quarterTurns: 1,
+                      child: Slider(
+                        value: widget.threshold!.value,
+                        min: 0.1,
+                        max: 2.0,
+                        onChanged: (newSliderValue) {
+                          setState(() {
+                            widget.threshold!.value = newSliderValue;
+                            //_cameraTakeImage();
+                          });
+                        },
+                        divisions: null,
+                      ),
                     ),
                   ),
-                ),
               ],
             );
           }
@@ -188,7 +188,7 @@ class _CameraPreviewWithPaintState extends State<CameraPreviewWithPaint> {
           });
           if (widget.onPaintLiveImageFunc != null) {
             _cameraService.cameraController?.startImageStream((cameraImage) {
-              widget.onPaintLiveImageFunc!(cameraImage, _cameraService.camera!);
+              widget.onPaintLiveImageFunc!(cameraImage);
             });
           }
           setState(() {});
