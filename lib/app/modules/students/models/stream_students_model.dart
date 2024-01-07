@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_modular/flutter_modular.dart';
@@ -11,6 +12,7 @@ import 'package:image/image.dart' as imglib;
 
 class StreamStudents extends Students {
   Uint8List? _uint8ListImage;
+  bool isFotoPointsOk = false;
   final StreamController<StreamStudents> _chamadaController =
       StreamController<StreamStudents>.broadcast();
   final StudentsController controller = Modular.get<StudentsController>();
@@ -54,11 +56,12 @@ class StreamStudents extends Students {
     if ((photoName.isNotEmpty) && (photoName.contains("?rev="))) {
       final url =
           '${photoName.replaceFirst(APIConstants.API_BASE_URL, "${APIConstants.API_BASE_URL}webservice/")}&token=${token.token}';
-      _uint8ListImage = (await NetworkAssetBundle(Uri.parse(url)).load(url))
-          .buffer
-          .asUint8List();
-      if (_uint8ListImage?.isNotEmpty ?? false) {
-        final image = imglib.decodeImage(_uint8ListImage!);
+      final uint8ListImageAux =
+          (await NetworkAssetBundle(Uri.parse(url)).load(url))
+              .buffer
+              .asUint8List();
+      if (uint8ListImageAux.isNotEmpty) {
+        final image = imglib.decodeImage(uint8ListImageAux);
         if (image != null) {
           final inputImage = await inputImageFromImgLibImage(image);
           final faces = await controller.faceDetectionService.faceDetector
@@ -67,14 +70,16 @@ class StreamStudents extends Students {
             imglib.Image? croppedImage = cropFace(image, faces[0]);
             if (croppedImage != null) {
               _uint8ListImage = imglib.encodePng(croppedImage);
-              imglib.copyResize(croppedImage, width: 120);
-              imglib.Image imageResized = imglib.copyResizeCropSquare(
-                  croppedImage,
-                  size: 112,
-                  interpolation: imglib.Interpolation.linear);
+              //imglib.copyResize(croppedImage, width: 120);
+              //imglib.Image imageResized = imglib.copyResizeCropSquare(
+              //    croppedImage,
+              //    size: 112,
+              //    interpolation: imglib.Interpolation.linear);
               try {
-                fotoPoints = (await controller.faceDetectionService
-                    .classificatorImage(imageResized));
+                if (isFotoPointsOk == false) {
+                  fotoPoints = (await controller.faceDetectionService
+                      .classificatorImage(croppedImage));
+                }
               } catch (e) {
                 debugPrint(e.toString());
               }
@@ -136,6 +141,12 @@ class StreamStudents extends Students {
       } else {
         mapSync['${id}_$firstname $lastname']![dateSelected] =
             chamada![dateSelected]!;
+      }
+      if ((isFotoPointsOk == false) &&
+          (controller.faceDetector.value == true)) {
+        isFotoPointsOk = true;
+        mapSync['${id}_$firstname $lastname']!['fotoPoints'] =
+            jsonEncode(controller.faceDetectionService.outputs[0]![0]);
       }
       controller.configStorage.setMapSync(sortNameCourse, mapSync);
       controller.countSync.value++;

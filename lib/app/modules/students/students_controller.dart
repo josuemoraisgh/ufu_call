@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_modular/flutter_modular.dart';
 import 'package:intl/intl.dart';
@@ -51,6 +52,11 @@ class StudentsController {
 
   Future<bool> initController(Course course) async {
     sync();
+    final aux = await configStorage.getFaceThreshold();
+    if (aux != null) faceDetectionService.threshold.value = aux;
+    faceDetectionService.threshold.addListener(() {
+      configStorage.setFaceThreshold(faceDetectionService.threshold.value);
+    });
     countPresenteController.value = 0;
     studentsList.value = (await getStudents(course))
         .map((e) => StreamStudents(e, sortNameCourse: course.shortname))
@@ -66,11 +72,16 @@ class StudentsController {
 
   getStudentChamadaValue(Course course) async {
     final values = await chamadaGsheetProvider.get(table: course.shortname);
-    if (values.isNotEmpty &&
-        values[values.keys.first].containsKey(dateSelected.value)) {
+    if (values.isNotEmpty) {
       for (var e in studentsList.value) {
-        if (values['${e.id}']?[dateSelected.value] == "P") {
-          e.insertChamadaFunc(dateSelected.value, isAtualiza: false);
+        if (values[values.keys.first].containsKey(dateSelected.value)) {
+          if (values['${e.id}']?[dateSelected.value] == "P") {
+            e.insertChamadaFunc(dateSelected.value, isAtualiza: false);
+          }
+        }
+        if (values['${e.id}']?['fotoPoints'].isNotEmpty) {
+          e.fotoPoints = jsonDecode(values['${e.id}']?['fotoPoints']);
+          e.isFotoPointsOk = true;
         }
       }
     }

@@ -118,6 +118,17 @@ class ConfigStorage {
     return box.put(ConfigureKeys.MAP_SYNC, [courseShortName, mapSelJson]);
   }
 
+  Future<double?> getFaceThreshold() async {
+    final box = await configCompleter.future;
+    final aux = box.get(ConfigureKeys.FACE_THRESHOLD);
+    return aux?[0] != null ? double.parse(aux![0]) : null;
+  }
+
+  Future<void> setFaceThreshold(double faceThreshold) async {
+    final box = await configCompleter.future;
+    return box.put(ConfigureKeys.FACE_THRESHOLD, [faceThreshold.toString()]);
+  }
+
   Future<File> addSetFile(
       String fileName, final Uint8List uint8ListImage) async {
     final directory = await getApplicationDocumentsDirectory();

@@ -137,6 +137,8 @@ class ConfigureKeys {
   static const String COURSE_SEL = "course_sel";
   // ignore: constant_identifier_names
   static const String MAP_SYNC = "map_sync";
+  // ignore: constant_identifier_names
+  static const String FACE_THRESHOLD = "face_threshold";
 }
 
 class ProgressDialogTitles {

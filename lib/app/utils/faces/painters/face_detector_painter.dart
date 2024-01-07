@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
@@ -22,12 +20,12 @@ class FaceDetectorPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final Paint paint1 = Paint()
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.0
-      ..color = Colors.red;
-    final Paint paint2 = Paint()
+      ..strokeWidth = 4 - 0.0
+      ..color = Colors.green;
+    /*final Paint paint2 = Paint()
       ..style = PaintingStyle.fill
       ..strokeWidth = 1.0
-      ..color = Colors.green;
+      ..color = Colors.green;*/
 
     for (final Face face in faces) {
       final left = translateX(
@@ -63,7 +61,7 @@ class FaceDetectorPainter extends CustomPainter {
         Rect.fromLTRB(left, top, right, bottom),
         paint1,
       );
-
+/*
       void paintContour(FaceContourType type) {
         final contour = face.contours[type];
         if (contour?.points != null) {
@@ -90,6 +88,9 @@ class FaceDetectorPainter extends CustomPainter {
           }
         }
       }
+      for (final type in FaceContourType.values) {
+        paintContour(type);
+      }
 
       void paintLandmark(FaceLandmarkType type) {
         final landmark = face.landmarks[type];
@@ -115,14 +116,10 @@ class FaceDetectorPainter extends CustomPainter {
               paint2);
         }
       }
-
-      for (final type in FaceContourType.values) {
-        paintContour(type);
-      }
-
       for (final type in FaceLandmarkType.values) {
         paintLandmark(type);
       }
+      */
     }
   }
 

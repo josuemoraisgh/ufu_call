@@ -50,6 +50,7 @@ class FaceDetectionService extends Disposable {
   late final FaceDetector faceDetector;
   //late SensorOrientationDetector orientation;
   final threshold = RxNotifier<double>(1.5);
+  Map<int, List<List<double>>> outputs = {};
 
   static const pontosdoModelo = 192; //512
   static const nomedoInterpreter =
@@ -117,7 +118,7 @@ class FaceDetectionService extends Disposable {
     List<StreamStudents> assistidosIdentList = [];
     List<List> inputs = [];
     double min = 2.0;
-    Map<int, List<List<double>>> outputs = {};
+    outputs = {};
     int i = 0, j = 0, k = 0;
     imglib.Image? image =
         imgLibImageFromCameraImage(cameraImage, cameraService);
@@ -142,6 +143,7 @@ class FaceDetectionService extends Disposable {
               var vector1 = Vector.fromList(assistidos[i].fotoPoints!);
               final vectorOut = Vector.fromList(outputs[0]![j]);
               final n2 = vectorOut.norm();
+              outputs[0]![j] = outputs[0]![j].map((e) => e / n2).toList();
               final aux = vector1.distanceTo(vectorOut / n2,
                   distance: Distance.euclidean);
               //debugPrint(aux.toString());
