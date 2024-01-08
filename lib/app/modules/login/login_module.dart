@@ -1,5 +1,4 @@
 import 'package:flutter_modular/flutter_modular.dart';
-
 import '../../app_module.dart';
 import '../../utils/provider/moodle_provider.dart';
 import '../../utils/storage/config_storage.dart';
@@ -12,7 +11,7 @@ class LoginModule extends Module {
 
   @override
   void binds(Injector i) {
-    i.addSingleton<LoginController>(() => LoginController(
+    i.add<LoginController>(() => LoginController(
           moodleLocalStorage: i.get<ConfigStorage>(),
           moodleProvider: i.get<MoodleProvider>(),
         ));

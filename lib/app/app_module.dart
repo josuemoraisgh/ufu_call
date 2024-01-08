@@ -12,15 +12,16 @@ import 'splash_page.dart';
 import 'utils/faces/camera_controle_service.dart';
 import 'utils/provider/moodle_provider.dart';
 
+final dio = Dio();
+
 class AppModule extends Module {
   @override
   void exportedBinds(Injector i) {
-    i.addInstance<CameraService>(CameraService());
-    i.addInstance<Dio>(Dio());
-    i.addInstance<ConfigStorage>(ConfigStorage());
-    i.addInstance<MoodleProvider>(MoodleProvider(providerHttp: i.get<Dio>()));
-    i.addInstance<ChamadaGsheetProvider>(
-        ChamadaGsheetProvider(provider: i.get<Dio>()));
+    i.add<Dio>(() => dio);
+    i.add<CameraService>(CameraService.new);
+    i.add<ConfigStorage>(ConfigStorage.new);
+    i.add<MoodleProvider>(() => MoodleProvider(providerHttp: dio));
+    i.add<ChamadaGsheetProvider>(() => ChamadaGsheetProvider(provider: dio));
   }
 
   @override
