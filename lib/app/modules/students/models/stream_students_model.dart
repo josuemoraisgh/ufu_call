@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_modular/flutter_modular.dart';
@@ -56,13 +57,13 @@ class StreamStudents extends Students {
     if ((photoName.isNotEmpty) && (photoName.contains("?rev="))) {
       final url =
           '${photoName.replaceFirst(APIConstants.API_BASE_URL, "${APIConstants.API_BASE_URL}webservice/")}&token=${token.token}';
-      final uint8ListImageAux =
+      _uint8ListImage =
           (await NetworkAssetBundle(Uri.parse(url)).load(url))
               .buffer
               .asUint8List();
-      if (uint8ListImageAux.isNotEmpty) {
-        final image = imglib.decodeImage(uint8ListImageAux);
-        if (image != null) {
+      if (_uint8ListImage!.isNotEmpty) {
+        final image = imglib.decodeImage(_uint8ListImage!);
+        if (image != null && (Platform.isAndroid || Platform.isMacOS)) {
           final inputImage = await inputImageFromImgLibImage(image);
           final faces = await controller.faceDetectionService.faceDetector
               .processImage(inputImage);

@@ -79,7 +79,7 @@ class StudentsController {
             e.insertChamadaFunc(dateSelected.value, isAtualiza: false);
           }
         }
-        if (values['${e.id}']?['fotoPoints'].isNotEmpty) {
+        if (values['${e.id}']?['fotoPoints'].isNotEmpty ?? false) {
           e.fotoPoints = jsonDecode(values['${e.id}']?['fotoPoints']);
           e.isFotoPointsOk = true;
         }
