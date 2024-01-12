@@ -25,62 +25,70 @@ class StudentsListViewSilver extends StatelessWidget {
     return ValueListenableBuilder<String>(
       valueListenable: controller.dateSelected,
       builder: (BuildContext context, String dateSelected, _) {
-        /*
-            int count = 0;
-            for (var element in list) {
-              if (element.chamada.toLowerCase().contains(data)) {
-                count++;
-              }
-            }
-            StreamStudents.countPresente = count;
-        */
-        return Column(
-          mainAxisSize: MainAxisSize.max,
-          children: [
-            if (faceDetectorView != null)
-              SizedBox(
-                  height: 300,
-                  width: MediaQuery.of(context).size.width,
-                  child: faceDetectorView!),
-            Expanded(
-              child: CustomScrollView(
-                semanticChildCount: list.length,
-                slivers: <Widget>[
-                  SliverSafeArea(
-                    top: false,
-                    minimum: const EdgeInsets.only(top: 8),
-                    sliver: SliverList(
-                      delegate: SliverChildBuilderDelegate(
-                        (context, index) {
-                          if (index < list.length) {
-                            return Column(
-                              children: <Widget>[
-                                row(list[index], dateSelected),
-                                index == list.length - 1
-                                    ? const Padding(
-                                        padding: EdgeInsets.only(bottom: 50))
-                                    : Padding(
-                                        padding: const EdgeInsets.only(
-                                          left: 100,
-                                          right: 16,
-                                        ),
-                                        child: Container(
-                                          height: 1,
-                                          color: Styles.linhaProdutoDivisor,
-                                        ),
-                                      ),
-                              ],
-                            );
-                          }
-                          return null;
-                        },
-                      ),
-                    ),
+        Widget parte = Expanded(
+          child: CustomScrollView(
+            semanticChildCount: list.length,
+            slivers: <Widget>[
+              SliverSafeArea(
+                top: false,
+                minimum: const EdgeInsets.only(top: 8),
+                sliver: SliverList(
+                  delegate: SliverChildBuilderDelegate(
+                    (context, index) {
+                      if (index < list.length) {
+                        return Column(
+                          children: <Widget>[
+                            row(list[index], dateSelected),
+                            index == list.length - 1
+                                ? const Padding(
+                                    padding: EdgeInsets.only(bottom: 50))
+                                : Padding(
+                                    padding: const EdgeInsets.only(
+                                      left: 100,
+                                      right: 16,
+                                    ),
+                                    child: Container(
+                                      height: 1,
+                                      color: Styles.linhaProdutoDivisor,
+                                    ),
+                                  ),
+                          ],
+                        );
+                      }
+                      return null;
+                    },
                   ),
-                ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
+        );
+        return LayoutBuilder(
+          builder: (context, constraints) => (constraints.maxWidth < 600)
+              ? Column(
+                  mainAxisSize: MainAxisSize.max,
+                  children: [
+                    if (faceDetectorView != null)
+                      SizedBox(
+                        height: 300,
+                        width: constraints.maxWidth,
+                        child: faceDetectorView!,
+                      ),
+                    parte,
+                  ],
+                )
+              : Row(
+                  mainAxisSize: MainAxisSize.max,
+                  children: [
+                    if (faceDetectorView != null)
+                      SizedBox(
+                        height: constraints.maxHeight,
+                        width: 150,
+                        child: faceDetectorView!,
+                      ),
+                    parte,
+                  ],
+                ),
         );
       },
     );
