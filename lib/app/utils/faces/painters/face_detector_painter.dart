@@ -4,62 +4,56 @@ import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
 import 'coordinates_translator.dart';
 
 class FaceDetectorPainter extends CustomPainter {
+  final List<Face> faces;
+  final int listSelected;
+  final Size imageSize;
+  final InputImageRotation rotation;
+  final CameraLensDirection cameraLensDirection;
   FaceDetectorPainter(
     this.faces,
+    this.listSelected,
     this.imageSize,
     this.rotation,
     this.cameraLensDirection,
   );
 
-  final List<Face> faces;
-  final Size imageSize;
-  final InputImageRotation rotation;
-  final CameraLensDirection cameraLensDirection;
-
   @override
   void paint(Canvas canvas, Size size) {
-    final Paint paint1 = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 4 - 0.0
-      ..color = Colors.green;
-    /*final Paint paint2 = Paint()
-      ..style = PaintingStyle.fill
-      ..strokeWidth = 1.0
-      ..color = Colors.green;*/
-
-    for (final Face face in faces) {
+    for (int i = 0; i < faces.length; i++) {
       final left = translateX(
-        face.boundingBox.left,
+        faces[i].boundingBox.left,
         size,
         imageSize,
         rotation,
         cameraLensDirection,
       );
       final top = translateY(
-        face.boundingBox.top,
+        faces[i].boundingBox.top,
         size,
         imageSize,
         rotation,
         cameraLensDirection,
       );
       final right = translateX(
-        face.boundingBox.right,
+        faces[i].boundingBox.right,
         size,
         imageSize,
         rotation,
         cameraLensDirection,
       );
       final bottom = translateY(
-        face.boundingBox.bottom,
+        faces[i].boundingBox.bottom,
         size,
         imageSize,
         rotation,
         cameraLensDirection,
       );
-
       canvas.drawRect(
         Rect.fromLTRB(left, top, right, bottom),
-        paint1,
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 4 - 0.0
+          ..color = i == listSelected ? Colors.green : Colors.red,
       );
 /*
       void paintContour(FaceContourType type) {

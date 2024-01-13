@@ -50,7 +50,7 @@ class FaceDetectionService extends Disposable {
   late final FaceDetector faceDetector;
   //late SensorOrientationDetector orientation;
   final threshold = RxNotifier<double>(1.5);
-  Map<int, List<List<double>>> outputs = {};
+  List<List<double>> outputs = [];
 
   static const pontosdoModelo = 192; //512
   static const nomedoInterpreter =
@@ -111,54 +111,47 @@ class FaceDetectionService extends Disposable {
 
   Future<void> predict(
       CameraImage cameraImage,
+      List<Face> facesDetected,
       CameraService cameraService,
       List<StreamStudents> assistidos,
-      RxNotifier<List<StreamStudents>> assistidoProvavel) async {
+      RxNotifier<List<List<StreamStudents>>> assistidoProvavel) async {
     await faceCompleter.future;
-    List<StreamStudents> assistidosIdentList = [];
-    List<List> inputs = [];
+    List<List<StreamStudents>> assistidosIdentList = [];
     double min = 2.0;
-    outputs = {};
-    int i = 0, j = 0, k = 0;
+    int i = 0, j = 0;
     imglib.Image? image =
         imgLibImageFromCameraImage(cameraImage, cameraService);
     InputImage? inputImage =
         inputImageFromCameraImage(cameraImage, cameraService);
     if (image != null && inputImage != null) {
-      final List<Face> facesDetected =
-          await faceDetector.processImage(inputImage);
-      if (facesDetected.isNotEmpty) {
-        k = 0;
-        for (var faceDetected in facesDetected) {
-          outputs.addAll({
-            k++: [List.filled(pontosdoModelo, 0)]
-          });
-          var imageAux = cropFace(image, faceDetected, step: 80) ?? image;
-          inputs.add([_preProcessImage(imageAux)]);
-        }
-        interpreter.runForMultipleInputs(inputs, outputs);
+      //final List<Face> facesDetected = await faceDetector.processImage(inputImage);
+      //if (facesDetected.isNotEmpty) {
+      for (var faceDetected in facesDetected) {
+        var imageAux = cropFace(image, faceDetected, step: 80) ?? image;
+        outputs.add((await classificatorImage(imageAux)));
+      }
+      for (j = 0; j < outputs.length; j++) {
+        assistidosIdentList.add([]);
         for (i = 0; i < assistidos.length; i++) {
-          for (j = 0; j < outputs.length; j++) {
-            if (assistidos[i].fotoPoints!.isNotEmpty) {
-              var vector1 = Vector.fromList(assistidos[i].fotoPoints!);
-              final vectorOut = Vector.fromList(outputs[0]![j]);
-              final n2 = vectorOut.norm();
-              outputs[0]![j] = outputs[0]![j].map((e) => e / n2).toList();
-              final aux = vector1.distanceTo(vectorOut / n2,
-                  distance: Distance.euclidean);
-              //debugPrint(aux.toString());
-              if (aux <= threshold.value) {
-                if (aux < min) {
-                  min = aux;
-                  assistidosIdentList = [assistidos[i]] + assistidosIdentList;
-                } else {
-                  assistidosIdentList.add(assistidos[i]);
-                }
+          if (assistidos[i].fotoPoints!.isNotEmpty) {
+            var vector1 = Vector.fromList(assistidos[i].fotoPoints!);
+            final vectorOut = Vector.fromList(outputs[j]);
+            final aux =
+                vector1.distanceTo(vectorOut, distance: Distance.euclidean);
+            //debugPrint(aux.toString());
+            if (aux <= threshold.value) {
+              if (aux < min) {
+                min = aux;
+                assistidosIdentList.last =
+                    [assistidos[i]] + assistidosIdentList.last;
+              } else {
+                assistidosIdentList.last.add(assistidos[i]);
               }
             }
           }
         }
       }
+      //}
     }
     assistidoProvavel.value = assistidosIdentList;
   }

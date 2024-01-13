@@ -70,7 +70,7 @@ class StudentsListViewSilver extends StatelessWidget {
                   children: [
                     if (faceDetectorView != null)
                       SizedBox(
-                        height: 300,
+                        height: constraints.maxHeight / 2,
                         width: constraints.maxWidth,
                         child: faceDetectorView!,
                       ),
@@ -83,7 +83,7 @@ class StudentsListViewSilver extends StatelessWidget {
                     if (faceDetectorView != null)
                       SizedBox(
                         height: constraints.maxHeight,
-                        width: 150,
+                        width: constraints.maxWidth / 2,
                         child: faceDetectorView!,
                       ),
                     parte,

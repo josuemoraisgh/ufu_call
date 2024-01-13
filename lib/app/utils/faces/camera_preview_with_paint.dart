@@ -211,7 +211,20 @@ class _CameraPreviewWithPaintState extends State<CameraPreviewWithPaint> {
   }
 
   Future<void> _cameraTakeImage() async {
-    if (_cameraService.isBusyCamera != true &&
+    if (_cameraService.cameraController != null) {
+      if (_cameraService.cameraController!.value.isStreamingImages) {
+        _cameraService.cameraController?.stopImageStream();
+      } else {
+        if (widget.onPaintLiveImageFunc != null) {
+          _cameraService.cameraController?.startImageStream((cameraImage) {
+            widget.onPaintLiveImageFunc!(cameraImage);
+          });
+        }
+      }
+    } else {
+      await _startLiveFeed(_cameraService.cameraDirection!);
+    }
+/*     if (_cameraService.isBusyCamera != true &&
         _cameraService.cameraController != null &&
         widget.takeImageFunc != null) {
       if (widget.isRealTime) {
@@ -220,12 +233,14 @@ class _CameraPreviewWithPaintState extends State<CameraPreviewWithPaint> {
         final xfileImage = await _cameraService.takePicture();
         final uint8List = await xfileImage?.readAsBytes();
         if (uint8List != null) {
-          await _startLiveFeed(_cameraService.cameraDirection!);
+          //await _startLiveFeed(_cameraService.cameraDirection!);
           widget.takeImageFunc!(uint8List);
         } else {
-          await _startLiveFeed(_cameraService.cameraDirection!);
+          //await _startLiveFeed(_cameraService.cameraDirection!);
         }
       }
-    }
+    } else {
+      await _startLiveFeed(_cameraService.cameraDirection!);
+    } */
   }
 }

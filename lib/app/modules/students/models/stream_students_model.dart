@@ -57,10 +57,9 @@ class StreamStudents extends Students {
     if ((photoName.isNotEmpty) && (photoName.contains("?rev="))) {
       final url =
           '${photoName.replaceFirst(APIConstants.API_BASE_URL, "${APIConstants.API_BASE_URL}webservice/")}&token=${token.token}';
-      _uint8ListImage =
-          (await NetworkAssetBundle(Uri.parse(url)).load(url))
-              .buffer
-              .asUint8List();
+      _uint8ListImage = (await NetworkAssetBundle(Uri.parse(url)).load(url))
+          .buffer
+          .asUint8List();
       if (_uint8ListImage!.isNotEmpty) {
         final image = imglib.decodeImage(_uint8ListImage!);
         if (image != null && (Platform.isAndroid || Platform.isMacOS)) {
@@ -147,7 +146,7 @@ class StreamStudents extends Students {
           (controller.faceDetector.value == true)) {
         isFotoPointsOk = true;
         mapSync['${id}_$firstname $lastname']!['fotoPoints'] =
-            jsonEncode(controller.faceDetectionService.outputs[0]![0]);
+            jsonEncode(controller.faceDetectionService.outputs[0]);
       }
       controller.configStorage.setMapSync(sortNameCourse, mapSync);
       controller.countSync.value++;

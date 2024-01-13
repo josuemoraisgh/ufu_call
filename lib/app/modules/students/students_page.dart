@@ -142,12 +142,15 @@ class _StudentsPageState extends State<StudentsPage> {
                 builder: (BuildContext context) => StudentsListViewSilver(
                   controller: controller,
                   list: controller.faceDetector.value == true
-                      ? controller.studentsProvavelList.value
+                      ? controller.studentsProvavelList
+                          .value[controller.listSelected.value]
                       : studentsListFilted,
                   faceDetectorView: controller.faceDetector.value == true
                       ? StudentsFaceDetectorView(
                           studentsList: studentsListFilted,
-                          studentsProvavel: controller.studentsProvavelList)
+                          studentsProvavel: controller.studentsProvavelList,
+                          listSelected: controller.listSelected,
+                        )
                       : null,
                 ),
               ),

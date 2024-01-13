@@ -17,7 +17,8 @@ class StudentsController {
   final isInitedController = RxNotifier<bool>(false);
 
   final studentsList = RxNotifier<List<StreamStudents>>([]);
-  final studentsProvavelList = RxNotifier<List<StreamStudents>>([]);
+  final studentsProvavelList = RxNotifier<List<List<StreamStudents>>>([[]]);
+  final listSelected = RxNotifier<int>(0);
   final dateList = RxNotifier<List<String>>([]);
   final dateSelected = RxNotifier<String>("");
   final countPresenteController = RxNotifier<int>(0);

@@ -14,11 +14,16 @@ import '../models/stream_students_model.dart';
 import 'package:image/image.dart' as imglib;
 
 class StudentsFaceDetectorView extends StatefulWidget {
-  final RxNotifier<List<StreamStudents>>? studentsProvavel;
+  final RxNotifier<List<List<StreamStudents>>>? studentsProvavel;
   final List<StreamStudents>? studentsList;
+  final RxNotifier<int>? listSelected;
   final StackFit? stackFit;
   const StudentsFaceDetectorView(
-      {super.key, this.studentsList, this.studentsProvavel, this.stackFit});
+      {super.key,
+      this.studentsList,
+      this.studentsProvavel,
+      this.stackFit,
+      this.listSelected});
 
   @override
   State<StudentsFaceDetectorView> createState() =>
@@ -73,11 +78,9 @@ class _StudentsFaceDetectorViewState extends State<StudentsFaceDetectorView> {
       if ((faces?.isNotEmpty ?? false) &&
           (cameraImage != null) &&
           (_cameraService?.camera != null)) {
-        if (faces!.length > 1) {
-          debugPrint("duas faces");
-        }
-        await faceDetectionService.predict(cameraImage!, _cameraService!,
-            widget.studentsList!, widget.studentsProvavel!);
+        widget.listSelected?.value = 0;
+        await faceDetectionService.predict(cameraImage!, faces!,
+            _cameraService!, widget.studentsList!, widget.studentsProvavel!);
       }
     }
   }
@@ -97,12 +100,15 @@ class _StudentsFaceDetectorViewState extends State<StudentsFaceDetectorView> {
     }
     if (inputImage.metadata?.size != null &&
         inputImage.metadata?.rotation != null) {
-      final painter = FaceDetectorPainter(faces!, inputImage.metadata!.size,
-          inputImage.metadata!.rotation, _cameraService!.camera!.lensDirection);
+      final painter = FaceDetectorPainter(
+          faces!,
+          widget.listSelected?.value ?? 0,
+          inputImage.metadata!.size,
+          inputImage.metadata!.rotation,
+          _cameraService!.camera!.lensDirection);
       _customPaint = CustomPaint(painter: painter);
     }
     _isBusy = false;
-
     if (mounted) {
       setState(
         () {
