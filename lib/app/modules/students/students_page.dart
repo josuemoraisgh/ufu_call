@@ -143,13 +143,13 @@ class _StudentsPageState extends State<StudentsPage> {
                   controller: controller,
                   list: controller.faceDetector.value == true
                       ? controller.studentsProvavelList
-                          .value[controller.listSelected.value]
+                          .value[controller.faceSelected.value]
                       : studentsListFilted,
                   faceDetectorView: controller.faceDetector.value == true
                       ? StudentsFaceDetectorView(
                           studentsList: studentsListFilted,
                           studentsProvavel: controller.studentsProvavelList,
-                          listSelected: controller.listSelected,
+                          faceSelected: controller.faceSelected,
                         )
                       : null,
                 ),

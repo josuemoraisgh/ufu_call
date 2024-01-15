@@ -18,7 +18,7 @@ class StudentsController {
 
   final studentsList = RxNotifier<List<StreamStudents>>([]);
   final studentsProvavelList = RxNotifier<List<List<StreamStudents>>>([[]]);
-  final listSelected = RxNotifier<int>(0);
+  final faceSelected = RxNotifier<int>(0);
   final dateList = RxNotifier<List<String>>([]);
   final dateSelected = RxNotifier<String>("");
   final countPresenteController = RxNotifier<int>(0);
@@ -128,7 +128,6 @@ class StudentsController {
   }
 
   void sync() async {
-    isRunningSync.value = true;
     final (table, value) = await configStorage.getMapSync();
     if (value.isNotEmpty) {
       await chamadaGsheetProvider.put(
@@ -138,6 +137,7 @@ class StudentsController {
       countSync.value = 0;
       configStorage.setMapSync("", {}); //mapSync.value = {};
     }
-    isRunningSync.value = false;
+    Future.delayed(
+        const Duration(seconds: 0), () => isRunningSync.value = false);
   }
 }
