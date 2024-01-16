@@ -67,9 +67,6 @@ class FaceDetectionService extends Disposable {
     if (!faceCompleter.isCompleted) {
       faceCompleter.complete(await initializeInterpreter());
     }
-    //interpreter.allocateTensors();
-    //orientation = SensorOrientationDetector();
-    //await orientation.init();
   }
 
   Future<bool> initializeInterpreter() async {
@@ -109,12 +106,23 @@ class FaceDetectionService extends Disposable {
     return true;
   }
 
-  Future<void> predict(
-      CameraImage cameraImage,
-      List<Face> facesDetected,
-      CameraService cameraService,
-      List<StreamStudents> assistidos,
-      RxNotifier<List<List<StreamStudents>>> assistidoProvavel) async {
+  Future<List<double>> classificatorImage(imglib.Image image) async {
+    await faceCompleter.future;
+    List<List<double>> output =
+        List.generate(1, (index) => List.filled(pontosdoModelo, 0));
+    List input = [_preProcessImage(image)];
+    interpreter.run(input, output);
+    final n2 = Vector.fromList(output[0]).norm();
+    final resp = output[0].map((e) => e / n2).toList();
+    return resp;
+  }
+
+  Future<List<List<StreamStudents>>> predict(
+    CameraImage cameraImage,
+    List<Face> facesDetected,
+    CameraService cameraService,
+    List<StreamStudents> assistidos,
+  ) async {
     await faceCompleter.future;
     List<List<StreamStudents>> assistidosIdentList = [];
     double min = 2.0;
@@ -124,13 +132,9 @@ class FaceDetectionService extends Disposable {
     InputImage? inputImage =
         inputImageFromCameraImage(cameraImage, cameraService);
     if (image != null && inputImage != null) {
-      //final List<Face> facesDetected = await faceDetector.processImage(inputImage);
-      //if (facesDetected.isNotEmpty) {
-      for (var faceDetected in facesDetected) {
-        var imageAux = cropFace(image, faceDetected, step: 80) ?? image;
+      for (j = 0; j < facesDetected.length; j++) {
+        var imageAux = cropFace(image, facesDetected[j], step: 80) ?? image;
         outputs.add((await classificatorImage(imageAux)));
-      }
-      for (j = 0; j < outputs.length; j++) {
         assistidosIdentList.add([]);
         for (i = 0; i < assistidos.length; i++) {
           if (assistidos[i].fotoPoints!.isNotEmpty) {
@@ -151,20 +155,8 @@ class FaceDetectionService extends Disposable {
           }
         }
       }
-      //}
     }
-    assistidoProvavel.value = assistidosIdentList;
-  }
-
-  Future<List<double>> classificatorImage(imglib.Image image) async {
-    await faceCompleter.future;
-    List<List<double>> output =
-        List.generate(1, (index) => List.filled(pontosdoModelo, 0));
-    List input = [_preProcessImage(image)];
-    interpreter.run(input, output);
-    final n2 = Vector.fromList(output[0]).norm();
-    final resp = output[0].map((e) => e / n2).toList();
-    return resp;
+    return assistidosIdentList;
   }
 
   Float32List preProcessImage1(imglib.Image image, Face faceDetected) {

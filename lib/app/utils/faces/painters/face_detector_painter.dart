@@ -1,6 +1,7 @@
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
+import 'package:rx_notifier/rx_notifier.dart';
 import 'coordinates_translator.dart';
 
 class FaceDetectorPainter extends CustomPainter {
@@ -9,16 +10,18 @@ class FaceDetectorPainter extends CustomPainter {
   final Size imageSize;
   final InputImageRotation rotation;
   final CameraLensDirection cameraLensDirection;
+  final RxNotifier<List<(double, double, double, double)>> dim;
   FaceDetectorPainter(
     this.faces,
     this.listSelected,
     this.imageSize,
     this.rotation,
     this.cameraLensDirection,
+    this.dim,
   );
-
   @override
   void paint(Canvas canvas, Size size) {
+    dim.value.clear();
     for (int i = 0; i < faces.length; i++) {
       final left = translateX(
         faces[i].boundingBox.left,
@@ -48,6 +51,7 @@ class FaceDetectorPainter extends CustomPainter {
         rotation,
         cameraLensDirection,
       );
+      dim.value.add((left, top, right, bottom));
       canvas.drawRect(
         Rect.fromLTRB(left, top, right, bottom),
         Paint()

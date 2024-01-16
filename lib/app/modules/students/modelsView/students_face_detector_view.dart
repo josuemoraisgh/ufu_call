@@ -58,15 +58,15 @@ class _StudentsFaceDetectorViewState extends State<StudentsFaceDetectorView> {
 
   Future<void> _takeImageFunc(
       CameraImage? cameraImage, List<Face>? faces) async {
-/*     if (widget.studentsList != null) {
+    if (widget.studentsList != null) {
       if ((faces?.isNotEmpty ?? false) &&
           (cameraImage != null) &&
           (_cameraService.camera != null)) {
         widget.faceSelected?.value = 0;
-        await _faceDetectionService.predict(cameraImage, faces!, _cameraService,
-            widget.studentsList!, widget.studentsProvavel!);
+        widget.studentsProvavel!.value = await _faceDetectionService.predict(
+            cameraImage, faces!, _cameraService, widget.studentsList!);
       }
-    } */
+    }
   }
 
   @override

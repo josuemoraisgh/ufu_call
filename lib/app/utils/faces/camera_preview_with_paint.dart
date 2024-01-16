@@ -35,6 +35,7 @@ class _CameraPreviewWithPaintState extends State<CameraPreviewWithPaint> {
   bool _canProcess = true, _isBusy = false;
   CameraImage? _cameraImage;
   List<Face>? _faces;
+  final _dim = RxNotifier<List<(double, double, double, double)>>([]);
   bool _changingCameraLens = false;
   CustomPaint? _customPaint;
   late Future<bool> _isStarted; //Não retirar muito importante
@@ -71,28 +72,43 @@ class _CameraPreviewWithPaintState extends State<CameraPreviewWithPaint> {
                 ? imgLibImageFromCameraImage(
                     _cameraImage!, widget.cameraService)
                 : null;
-            return Stack(
-              fit: StackFit.passthrough,
-              children: <Widget>[
-                (widget.cameraService.cameraController?.value
-                                .isStreamingImages ??
-                            true) ||
-                        image == null
-                    ? _changingCameraLens
-                        ? const Center(child: Text('Changing camera lens'))
-                        : CameraPreview(widget.cameraService.cameraController!)
-                    : Image.memory(image.toUint8List()),
-                GestureDetector(
-                  key: const ValueKey<int>(1),
-                  onPanDown: (DragDownDetails details) {
-                    //details.localPosition
-                  },
-                  child: _customPaint,
-                ),
-                _floatingActionButton(),
-                _floatingActionSliderZoom(),
-                _floatingActionSliderThreshold(),
-              ],
+            return LayoutBuilder(
+              builder: (context, constraints) => Stack(
+                fit: StackFit.passthrough,
+                children: <Widget>[
+                  (widget.cameraService.cameraController?.value
+                                  .isStreamingImages ??
+                              true) ||
+                          image == null
+                      ? _changingCameraLens
+                          ? const Center(child: Text('Changing camera lens'))
+                          : CameraPreview(
+                              widget.cameraService.cameraController!)
+                      : Image.memory(
+                          imglib.encodeJpg(image),
+                          fit: BoxFit.fill,
+                        ),
+                  GestureDetector(
+                    key: const ValueKey<int>(1),
+                    onPanDown: (DragDownDetails details) {
+                      if (_faces != null && _dim.value.isNotEmpty) {
+                        for (int i = 0; i < _faces!.length; i++) {
+                          if (details.localPosition.dx > _dim.value[i].$1 &&
+                              details.localPosition.dy < _dim.value[i].$2 &&
+                              details.localPosition.dx < _dim.value[i].$3 &&
+                              details.localPosition.dy > _dim.value[i].$4) {
+                            widget.faceSelected?.value = i;
+                          }
+                        }
+                      }
+                    },
+                    child: _customPaint,
+                  ),
+                  _floatingActionButton(),
+                  _floatingActionSliderZoom(),
+                  _floatingActionSliderThreshold(),
+                ],
+              ),
             );
           }
         }
@@ -112,10 +128,8 @@ class _CameraPreviewWithPaintState extends State<CameraPreviewWithPaint> {
           min: 0.1,
           max: 2.0,
           onChanged: (newSliderValue) {
-            setState(
-              () =>
-                  widget.faceDetectionService.threshold.value = newSliderValue,
-            );
+            setState(() =>
+                widget.faceDetectionService.threshold.value = newSliderValue);
           },
           divisions: null,
         ),
@@ -241,7 +255,8 @@ class _CameraPreviewWithPaintState extends State<CameraPreviewWithPaint> {
           widget.faceSelected?.value ?? 0,
           inputImage.metadata!.size,
           inputImage.metadata!.rotation,
-          widget.cameraService.camera!.lensDirection);
+          widget.cameraService.camera!.lensDirection,
+          _dim);
       _customPaint = CustomPaint(painter: painter);
     }
     _isBusy = false;
