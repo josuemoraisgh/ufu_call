@@ -18,6 +18,20 @@ class Students {
       this.chamada,
       this.fotoPoints});
 
+  dynamic item(String item) {
+    return switch (item) {
+      'id' => id,
+      'firstname' => firstname,
+      'lastname' => lastname,
+      'email' => email,
+      'photoName' => photoName,
+      'sortNameCourse' => sortNameCourse,
+      'chamada' => chamada,
+      'fotoPoints' => fotoPoints,
+      _ => null,
+    };
+  }
+
   Students.empty()
       : id = -1,
         firstname = "",

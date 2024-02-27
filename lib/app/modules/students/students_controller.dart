@@ -17,8 +17,8 @@ class StudentsController {
   final isInitedController = RxNotifier<bool>(false);
 
   final studentsList = RxNotifier<List<StreamStudents>>([]);
-  final studentsProvavelList = RxNotifier<List<List<StreamStudents>>>([[]]);
-  final faceSelected = RxNotifier<int>(0);
+  final studentsProvavelList = RxNotifier<List<StreamStudents>>([]);
+
   final dateList = RxNotifier<List<String>>([]);
   final dateSelected = RxNotifier<String>("");
   final countPresenteController = RxNotifier<int>(0);
@@ -106,16 +106,40 @@ class StudentsController {
   }
 
   List<StreamStudents> search(
-      List<StreamStudents> studentsList, String termosDeBusca) {
-    return studentsList
-        .where((students) => (students.firstname + students.lastname)
-            .toLowerCase()
-            .replaceAllMapped(
-                RegExp(r'[\W\[\] ]'),
-                (Match a) =>
-                    caracterMap.containsKey(a[0]) ? caracterMap[a[0]]! : a[0]!)
-            .contains(termosDeBusca.toLowerCase()))
-        .toList()
+      List<StreamStudents> studentsList, String termosDeBusca,
+      {bool isContains = true, String? item, String? condicao}) {
+    final aux = item != null && condicao != null
+        ? studentsList
+            .where(
+              (assistido) {
+                var solucao = assistido
+                    .item(item)
+                    .toString()
+                    // ignore: prefer_interpolation_to_compose_strings
+                    .contains(RegExp(r"^(" + condicao + ")"));
+                return isContains ? solucao : !solucao;
+              },
+            )
+            .where((students) => (students.firstname + students.lastname)
+                .toLowerCase()
+                .replaceAllMapped(
+                    RegExp(r'[\W\[\] ]'),
+                    (Match a) => caracterMap.containsKey(a[0])
+                        ? caracterMap[a[0]]!
+                        : a[0]!)
+                .contains(termosDeBusca.toLowerCase()))
+            .toList()
+        : studentsList
+            .where((students) => (students.firstname + students.lastname)
+                .toLowerCase()
+                .replaceAllMapped(
+                    RegExp(r'[\W\[\] ]'),
+                    (Match a) => caracterMap.containsKey(a[0])
+                        ? caracterMap[a[0]]!
+                        : a[0]!)
+                .contains(termosDeBusca.toLowerCase()))
+            .toList();
+    return aux
       ..sort((a, b) {
         // Primeiro, comparar pelo campo nome
         int comparacao =

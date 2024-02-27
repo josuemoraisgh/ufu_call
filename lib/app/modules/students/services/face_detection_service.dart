@@ -117,14 +117,14 @@ class FaceDetectionService extends Disposable {
     return resp;
   }
 
-  Future<List<List<StreamStudents>>> predict(
+  Future<List<StreamStudents>> predict(
     CameraImage cameraImage,
-    List<Face> facesDetected,
+    Face faceDetected,
     CameraService cameraService,
     List<StreamStudents> assistidos,
   ) async {
     await faceCompleter.future;
-    List<List<StreamStudents>> assistidosIdentList = [];
+    List<StreamStudents> assistidosIdentList = [];
     double min = 2.0;
     int i = 0, j = 0;
     imglib.Image? image =
@@ -132,10 +132,9 @@ class FaceDetectionService extends Disposable {
     InputImage? inputImage =
         inputImageFromCameraImage(cameraImage, cameraService);
     if (image != null && inputImage != null) {
-      for (j = 0; j < facesDetected.length; j++) {
-        var imageAux = cropFace(image, facesDetected[j], step: 80) ?? image;
+        var imageAux = cropFace(image, faceDetected, step: 80) ?? image;
         outputs.add((await classificatorImage(imageAux)));
-        assistidosIdentList.add([]);
+        //assistidosIdentList.add([]);
         for (i = 0; i < assistidos.length; i++) {
           if (assistidos[i].fotoPoints!.isNotEmpty) {
             var vector1 = Vector.fromList(assistidos[i].fotoPoints!);
@@ -146,15 +145,14 @@ class FaceDetectionService extends Disposable {
             if (aux <= threshold.value) {
               if (aux < min) {
                 min = aux;
-                assistidosIdentList.last =
-                    [assistidos[i]] + assistidosIdentList.last;
+                assistidosIdentList =
+                    [assistidos[i]] + assistidosIdentList;
               } else {
-                assistidosIdentList.last.add(assistidos[i]);
+                assistidosIdentList.add(assistidos[i]);
               }
             }
           }
         }
-      }
     }
     return assistidosIdentList;
   }

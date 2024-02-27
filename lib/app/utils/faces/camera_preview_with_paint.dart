@@ -12,9 +12,8 @@ import 'package:image/image.dart' as imglib;
 class CameraPreviewWithPaint extends StatefulWidget {
   final CameraService cameraService;
   final FaceDetectionService faceDetectionService;
-  final RxNotifier<int>? faceSelected;
   final Future<void> Function(CameraImage cameraImage)? processImageStream;
-  final Future<void> Function(CameraImage? cameraImage, List<Face>? faces)?
+  final Future<void> Function(CameraImage? cameraImage, Face? face)?
       takeImageFunc;
   final dynamic Function()? switchLiveCameraFunc;
   const CameraPreviewWithPaint({
@@ -24,7 +23,6 @@ class CameraPreviewWithPaint extends StatefulWidget {
     this.processImageStream,
     this.takeImageFunc,
     this.switchLiveCameraFunc,
-    this.faceSelected,
   });
   @override
   State<CameraPreviewWithPaint> createState() => _CameraPreviewWithPaintState();
@@ -33,8 +31,11 @@ class CameraPreviewWithPaint extends StatefulWidget {
 class _CameraPreviewWithPaintState extends State<CameraPreviewWithPaint> {
   double _zoomLevel = 0.0, _minZoomLevel = 0.0, _maxZoomLevel = 0.0;
   bool _canProcess = true, _isBusy = false;
+  int _faceSelected = 0;
   CameraImage? _cameraImage;
   List<Face>? _faces;
+  Size _imageSize = const Size(0.0, 0.0);
+  InputImageRotation _imageRotation = InputImageRotation.rotation0deg;
   final _dim = RxNotifier<List<(double, double, double, double)>>([]);
   bool _changingCameraLens = false;
   CustomPaint? _customPaint;
@@ -94,10 +95,26 @@ class _CameraPreviewWithPaintState extends State<CameraPreviewWithPaint> {
                       if (_faces != null && _dim.value.isNotEmpty) {
                         for (int i = 0; i < _faces!.length; i++) {
                           if (details.localPosition.dx > _dim.value[i].$1 &&
-                              details.localPosition.dy < _dim.value[i].$2 &&
+                              details.localPosition.dy > _dim.value[i].$2 &&
                               details.localPosition.dx < _dim.value[i].$3 &&
-                              details.localPosition.dy > _dim.value[i].$4) {
-                            widget.faceSelected?.value = i;
+                              details.localPosition.dy < _dim.value[i].$4) {
+                            _faceSelected = i;
+                            setState(() {
+                              if (widget.takeImageFunc != null &&
+                                  _faces != null) {
+                                widget.takeImageFunc!(_cameraImage, _faces![i]);
+                              }
+                              _customPaint = CustomPaint(
+                                painter: FaceDetectorPainter(
+                                  _faces!,
+                                  _faceSelected,
+                                  _imageSize,
+                                  _imageRotation,
+                                  widget.cameraService.camera!.lensDirection,
+                                  _dim,
+                                ),
+                              );
+                            });
                           }
                         }
                       }
@@ -250,14 +267,18 @@ class _CameraPreviewWithPaintState extends State<CameraPreviewWithPaint> {
     }
     if (inputImage.metadata?.size != null &&
         inputImage.metadata?.rotation != null) {
-      final painter = FaceDetectorPainter(
+      _imageSize = inputImage.metadata!.size;
+      _imageRotation = inputImage.metadata!.rotation;
+      _customPaint = CustomPaint(
+        painter: FaceDetectorPainter(
           _faces!,
-          widget.faceSelected?.value ?? 0,
-          inputImage.metadata!.size,
-          inputImage.metadata!.rotation,
+          _faceSelected,
+          _imageSize,
+          _imageRotation,
           widget.cameraService.camera!.lensDirection,
-          _dim);
-      _customPaint = CustomPaint(painter: painter);
+          _dim,
+        ),
+      );
     }
     _isBusy = false;
     if (mounted) {
@@ -296,8 +317,9 @@ class _CameraPreviewWithPaintState extends State<CameraPreviewWithPaint> {
     if (mounted) {
       setState(
         () {
-          if (widget.takeImageFunc != null) {
-            widget.takeImageFunc!(_cameraImage, _faces);
+          if (widget.takeImageFunc != null && _faces != null) {
+            widget.takeImageFunc!(
+                _cameraImage, _faces![_faceSelected]);
           }
         },
       );

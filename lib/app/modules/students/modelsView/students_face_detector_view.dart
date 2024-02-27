@@ -9,11 +9,10 @@ import '../students_controller.dart';
 import '../models/stream_students_model.dart';
 
 class StudentsFaceDetectorView extends StatefulWidget {
-  final RxNotifier<List<List<StreamStudents>>>? studentsProvavel;
+  final RxNotifier<List<StreamStudents>>? studentsProvavel;
   final List<StreamStudents>? studentsList;
-  final RxNotifier<int>? faceSelected;
   const StudentsFaceDetectorView(
-      {super.key, this.studentsList, this.studentsProvavel, this.faceSelected});
+      {super.key, this.studentsList, this.studentsProvavel});
 
   @override
   State<StudentsFaceDetectorView> createState() =>
@@ -24,10 +23,10 @@ class _StudentsFaceDetectorViewState extends State<StudentsFaceDetectorView> {
   late Future<bool> isInited;
   //bool _canProcess = true, _isBusy = false;
   CameraImage? cameraImage;
+  final _controller = Modular.get<StudentsController>();
   final _cameraService = Modular.get<CameraService>();
   final _faceDetectionService =
       Modular.get<StudentsController>().faceDetectionService;
-
   Future<bool> init() async {
     return true;
   }
@@ -56,15 +55,20 @@ class _StudentsFaceDetectorViewState extends State<StudentsFaceDetectorView> {
     );
   }
 
-  Future<void> _takeImageFunc(
-      CameraImage? cameraImage, List<Face>? faces) async {
+  Future<void> _takeImageFunc(CameraImage? cameraImage, Face? face) async {
     if (widget.studentsList != null) {
-      if ((faces?.isNotEmpty ?? false) &&
+      if ((face != null) &&
           (cameraImage != null) &&
           (_cameraService.camera != null)) {
-        widget.faceSelected?.value = 0;
         widget.studentsProvavel!.value = await _faceDetectionService.predict(
-            cameraImage, faces!, _cameraService, widget.studentsList!);
+          cameraImage,
+          face,
+          _cameraService,
+          _controller.search(widget.studentsList!, "",
+              isContains: false,
+              item: _controller.dateSelected.value,
+              condicao: "P"),
+        );
       }
     }
   }
